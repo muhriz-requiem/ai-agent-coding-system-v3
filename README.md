@@ -11,7 +11,7 @@ This repo is what I built because of that record. Same architecture family — 3
 
 > ## Why this repository is published
 >
-> Same policy as v1: the evidence is committed, including the unflattering parts. Every phase of the v3 branch has a ledger entry in the commit trail — the two full escalation cycles it took to learn that content-mode builders are blind, the 1.1k-line log flood from a level-triggered warning, eight independent candidates blocked by the *same* pin before anyone audited the spec pair itself. Where a human had to do the work, the ledger says so.
+> Same policy as v1: the evidence is committed, including the unflattering parts. Every phase of the v3 branch has a ledger entry — the two full escalation cycles it took to learn that content-mode builders are blind, the 1.1k-line log flood from a level-triggered warning, eight independent candidates blocked by the *same* pin before anyone audited the spec pair itself. Where a human had to do the work, the ledger says so.
 
 ## What did not survive v1, and what changed here
 
@@ -26,7 +26,7 @@ This repo is what I built because of that record. Same architecture family — 3
 
 ## The proofs, and their costs
 
-Three payoff builds ran on this branch (all machine-built via boards, graded by authored tests; numbers from their closeout commits):
+Three payoff builds ran on this branch (all machine-built via boards, graded by authored tests; numbers from their closeout records):
 
 | Build | Result | The cost, stated |
 | --- | --- | --- |
@@ -110,7 +110,7 @@ python -m pytest tests -q     # core suite -- 663 tests (662 passed + 1 skipped 
 
 ## The ledger
 
-Every phase of this branch (opencode 2.0 harness upgrade, REA registration, harness capability mining, the research lane, the case study, three payoff builds, the company lane, the notes lane) is documented commit-by-commit with its costs. Start from the v1 repo's post-mortem, then read this branch's history forward; the commits link the findings to the fixes.
+Every phase of this branch (opencode 2.0 harness upgrade, REA registration, harness capability mining, the research lane, the case study, three payoff builds, the company lane, the notes lane) is documented with its costs. This repository is a curated snapshot: the day-to-day development history lives in the private workspace, and what's committed here is the system, the phase record, and the run evidence under `projects/*/.agent/` that the findings rest on.
 
 For the record: this branch's `providers.VERSION` still reads **2.9.1** — the constant was never bumped during the overhaul, and the real version history is the commit ledger, not the constant. The version-single-source test pins exactly the "constant appears in the README" property that once caught versions drifting apart as independent prose.
 
