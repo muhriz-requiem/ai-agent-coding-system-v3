@@ -1,0 +1,18 @@
+qreturns: stdlib-only returns-metrics library plus minimal CLI for quant-finance research. No network, no third-party packages. Layout: package src/qreturns/ with __init__.py, metrics.py, cli.py. Tests import src.qreturns.metrics / src.qreturns.cli directly.
+
+MODULE src/qreturns/metrics.py:
+- compute_metrics(prices) -> dict with EXACTLY four keys: annualized_return, annualized_vol, sharpe, max_drawdown (all float).
+- prices must be a list of at least 3 strictly positive numbers, else raise ValueError('need at least 3 prices').
+- daily log returns: r_t = ln(p_t / p_{t-1}) for t = 2..n, so there are len(prices)-1 >= 2 return values.
+- annualized_return = mean(r) * 252.
+- annualized_vol = statistics.stdev(r) * sqrt(252)  (stdev with default ddof=1).
+- sharpe = annualized_return / annualized_vol if annualized_vol > 0 else 0.0.
+- wealth path: w_0 = 1.0, w_t = w_{t-1} * exp(r_t). running max includes w_0. drawdown_t = w_t / running_max - 1. max_drawdown = min(all drawdowns) <= 0.0.
+- WORKED EXAMPLE pinning the contract exactly: prices=[100, 80, 120] -> returns=[ln(0.8), ln(1.5)] -> wealth=[1.0, 0.8, 1.2] -> running_max=[1.0, 1.0, 1.2] -> drawdowns=[0.0, -0.2, 0.0] -> max_drawdown == -0.2 (compare with == for this one; pytest.approx for float-valued keys). annualized_vol > 0 and sharpe != 0 for this example.
+- guards: len(prices) < 3 -> ValueError('need at least 3 prices'); any p <= 0 -> ValueError('prices must be positive').
+- floats compared with pytest.approx default tolerance; e.g. annualized_return for [100,80,120] == ln(1.2) * 126 (since mean(r) = ln(1.2)/2 and * 252).
+
+CLI src/qreturns/cli.py:
+- main(argv) -> int, callable directly from tests (no subprocess): argv[0] is a CSV path; csv has an optional 'price' header then one price per row.
+- on success prints exactly four lines, one per key, format 'key=value' with repr(float): annualized_return=..., annualized_vol=..., sharpe=..., max_drawdown=..., in that order. Returns 0.
+- on invalid input (fewer than 3 data rows, non-numeric, non-positive): writes one line starting with 'bad csv: ' to stderr and returns 2.

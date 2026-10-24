@@ -1,0 +1,198 @@
+# Position-Sizing Concerns Registry
+# project_main — generated 2026-09-04, resolved 2026-09-04,
+# future items addressed 2026-09-07, items 12-14 addressed 2026-09-08,
+# items 15-17 (pairs module) addressed 2026-09-12
+
+## HIGH
+1. SELL qty ignores actual holdings — FIXED
+   - Was: sells sized to budget/price, could exceed position
+   - Fix: build_order_plan takes positions {ticker: qty} (fetched via
+     AlpacaClient.get_positions in cli._components, threaded through
+     graph.run_pipeline); SELL qty = min(budget/price, held qty), skipped
+     when nothing held. SELL notional no longer consumes the BUY-side cap.
+
+2. No volatility scaling (equal $ ≠ equal risk) — FIXED
+   - Was: $100 per ticker regardless of realized vol
+   - Fix: generate_signal emits daily_vol (std of last 20 daily returns);
+     budget *= min(1.0, TARGET_DAILY_VOL / daily_vol). Scale-down only:
+     low-vol names never exceed the base budget.
+
+## MEDIUM
+3. No conviction weighting — FIXED (quant confidence)
+   - Was: binary approve/veto → equal budget
+   - Fix: budget *= clamp(quant.confidence / 0.95, 0.25, 1.0). Debate
+     winner weighting: see item 10 (completed 2026-09-07).
+
+4. No sector/correlation concentration cap — FIXED (sector cap)
+   - Was: 10 tech tickers = 100% sector exposure
+   - Fix: fundamentals now map yfinance "sector"; graph derives a
+     sector_map per run; BUY notional per sector capped at
+     equity * MAX_SECTOR_PCT (default 0.30); sectorless tickers exempt.
+     Correlation concentration: see item 11 (completed 2026-09-07).
+
+5. PDT gate blocks SELL only — FIXED (gate inverted)
+   - Was: SELLs blocked during restriction → trapped positions, long bias
+   - Fix: inverted. Restriction blocks BUYs (risk-adding) and allows
+     SELLs (risk-reducing exits).
+
+## BONUS (found during evaluation)
+6. Audit log never recorded emitted orders — FIXED
+   - Was: graph.run_pipeline returned hardcoded "orders": [] per ticker
+   - Fix: each decision dict now carries its own emitted orders
+     (JSON-safe dicts), persisted by the SQLite audit log.
+
+## LOW / FUTURE (addressed 2026-09-07)
+7. Kelly / Kelly-fraction sizing (needs backtest stats) — FIXED
+   - Fix: deterministic replay backtest (src/backtest/replay.py, CLI
+     `python -m src.cli backtest --tickers ... --period 2y --horizon 5`)
+     replays the quant signals over history (no LLM) and writes
+     win-rate/payoff/Kelly stats to data/backtest_stats.json
+     (BACKTEST_STATS_PATH). build_order_plan multiplies budgets by
+     1 + (KELLY_MAX_MULT - 1) * min(fraction / KELLY_FRACTION_CAP, 1)
+     (defaults 0.25 / 1.5) when KELLY_ENABLED=1 and the aggregate stats
+     have n >= KELLY_MIN_TRADES (30) and a positive fraction. Kelly is
+     the ONLY scale-up factor; it is bounded by kelly_max_mult and by
+     the hard per-name cap equity * MAX_POSITION_PCT * kelly_max_mult.
+     The cumulative BUY cap stays at equity. Absent/junk stats and
+     non-positive fractions leave sizing untouched (factor 1.0).
+
+8. Risk-parity / inverse-vol optimization (needs cov matrix) — FIXED (inverse-vol)
+   - Fix: batch-level equal-risk-contribution caps inside
+     build_order_plan (INVOL_ENABLED=1 default): when >= 2 same-day BUY
+     candidates carry a valid daily_vol, each budget is capped at its
+     1/vol-weighted share of the batch's total BUY budget (computed on
+     post-factor budgets). Cap only: low-vol names never exceed their
+     factor budget, so sizing stays scale-down-only. Full
+     covariance-based risk parity remains future work (needs a cov
+     matrix across the watchlist).
+
+9. Transaction cost awareness (spread/commission in sizing) — FIXED
+   - Fix: COST_BUFFER_PCT (default 0.0 = no-op; opt-in) scales budgets
+     by (1 - buffer), and MIN_TRADE_NOTIONAL (default 10.0) skips
+     sub-minimum dust orders on both sides.
+
+10. Full conviction blend (debate.winner + analyst confidences into sizing)
+    — FIXED (2026-09-07)
+   - PARTIAL earlier (2026-09-07, whale/flow integration): directional
+     blend of the insider/institutional/options_flow analyst stances
+     scales the budget (agree=confidence, oppose=1-confidence,
+     neutral=0.5; weights .3/.3/.4; scale-down-only). Only reports
+     backed by status=="ok" fetches contribute; flags off -> factor 1.0.
+   - Completed: debate records now thread into build_order_plan
+     (graph.py buckets them per ticker). A "bear" winner shrinks BUYs
+     and a "bull" winner shrinks SELLs by DEBATE_OPPOSE_MULT (default
+     0.75, clamped [0.25, 1.0]); undecided/absent debates are a no-op.
+     Cited in the rationale as `debate <winner> x<mult>` when applied.
+
+11. Correlation-based concentration (needs cov matrix) — FIXED (pairwise corr)
+    - Fix: src/quant/correlation.py clusters same-day BUY candidates by
+      pairwise Pearson correlation of aligned daily returns from the
+      already-fetched closes (single-linkage union-find, positive corr
+      only, CORR_CLUSTER_THRESHOLD default 0.80, CORR_MIN_OBSERVATIONS
+      default 60, fail-open on insufficient overlap). graph.py builds
+      the cluster map once per batch; BUY notional per cluster is
+      capped at equity * MAX_CORR_PCT (default 0.30) with its own
+      accumulator (a name can hit both the sector and cluster caps).
+      Full covariance concentration remains future work.
+
+12. Regime threshold tuning (VIX_PANIC_LEVEL, z thresholds; needs backtest)
+    — FIXED (2026-09-08: numeric tuning applied)
+    - Fix: gate thresholds are env-configurable (VIX_BACKWARDATION,
+      VIX_PANIC_LEVEL, FEAR_Z_THRESHOLD, LIQUIDITY_Z_FLOOR) threaded
+      through fetch_regime/compute_regime `thresholds`; junk values
+      fall back to the v1 defaults (behavior identical unless set).
+    - Fix: `python -m src.cli regime-sweep --period 1y` (src/backtest/
+      regime_sweep.py) evaluates the threshold-independent regime
+      quantities per historical date and reports each candidate
+      threshold's gate fire rate — the data needed to actually pick
+      values.
+    - Tuned 2026-09-08 from 1y/2y/5y sweeps (target ~3-10% fire rate,
+      stable across periods): VIX_PANIC_LEVEL 30->25 (30 fired 0.8-2.7%),
+      FEAR_Z_THRESHOLD 1.0->1.5 (1.0 fired 17.5% at 1y), LIQUIDITY_Z_FLOOR
+      -1.0->-0.5 (-1.0 never fired in 2y/5y). VIX_BACKWARDATION kept 1.0.
+      Applied in .env + .env.example; code defaults stay v1.
+
+13. Quant signal uses price only (no volume / regime confirmation)
+    — FIXED (2026-09-08: BUY-side confirmation gates)
+    - Fix: generate_signal gained three fail-open BUY gates, each
+      env-tunable and disabled-by-default in code (shipped enabled in
+      .env): VOLUME_Z_MIN_BUY (bar volume z-score vs 20d must be >=
+      threshold), FEAR_Z_MAX_BUY (regime fear_z composite must be <=
+      threshold) and BREADTH_GOLD_EQ_MIN_BUY (gold/equity breadth z must
+      be >= threshold). SELLs are ungated; missing volume/regime data
+      never blocks a BUY. The per-gate pass map is recorded in the
+      quant dict ("gates" key) for the audit trail. graph.py passes the
+      batch regime snapshot into generate_signal so the regime gates
+      evaluate live; replay.py passes the full OHLCV frame so the
+      volume gate works in backtests.
+    - CORRECTED (2026-09-14): the claim "replay.py passes the full
+      OHLCV frame so the volume gate works in backtests" was true for
+      close-mode replays but NOT for the overnight replay — it rebuilt
+      the signal frame with a lowercase "volume" column, which
+      generate_signal cannot see, pinning volume_z to 0.0 in overnight
+      backtests while live gated on real volume z-scores. The overnight
+      replay now keeps the capital "Volume" column (and the portfolio
+      vectorized mirror computes the same volume z), so overnight
+      backtests match the live gate. Consequence: the previously
+      promoted primary Kelly (+0.127 on n=1592) was measured on a
+      population live would partially have blocked; the refreshed
+      primary stats (VOLUME_Z_MIN_BUY=0.0) show kelly=None on
+      n=1123 with execution costs (kelly 0.086 cost-free). Fear/breadth
+      regime gates remain fail-open in replays (historical per-bar
+      regime snapshots are not reconstructable from the current
+      fetcher) — replay signal populations are still slightly larger
+      than live for those two gates.
+
+14. Backtest stats lack risk-adjusted metrics; Kelly source ambiguous
+    — FIXED (2026-09-08)
+    - Fix: summarize_trades now computes Sharpe, Sortino, Calmar and
+      Omega from the trade-horizon return series (annualized via
+      sqrt(252/horizon); Calmar from the equity-curve max drawdown;
+      Omega = gain mass / loss mass at threshold 0). Persisted in both
+      stats files and printed by the CLI.
+    - Fix: `backtest --mode overnight --primary` promotes the overnight
+      BUY-side stats into BACKTEST_STATS_PATH (mode "overnight_buy")
+      so intraday Kelly sizing scales on the validated overnight edge
+      (2y, 28 names: n=1161, kelly +0.082, Sharpe 0.74, usable=True).
+    - Fix: `backtest-sweep` CLI (src/backtest/sweep.py) runs the full
+      mode x period x horizon grid into a JSON matrix for offline
+      analysis; per-combo failures degrade fail-open.
+
+15. Pairs legs could bypass the single-leg caps (concentration escape)
+    — ADDRESSED BY DESIGN (2026-09-12, pairs module)
+    - Fix: pair legs are planned INSIDE build_order_plan
+      (_build_pair_order_plans) and consume the SAME cumulative equity
+      cap, sector cap and correlation-cluster cap accumulators as the
+      single-leg plan, plus two extra rails of their own: per-pair
+      (equity * MAX_PAIR_PCT = 3%, BOTH legs combined) and total-pairs
+      (equity * MAX_PAIRS_PCT = 30%). Cap priority is explicit: pair
+      plans are appended AFTER single-leg plans, so when the shared
+      equity cap binds, pair legs are skipped first (the single-leg
+      edge carries the validated Kelly stats; pairs are unvalidated).
+      Pair BUY legs also pass the same PDT + panic gates.
+
+16. Pairs exits could strand partial residues (conviction-scaled exits)
+    — ADDRESSED BY DESIGN (2026-09-12)
+    - Risk: the plan sketched SELL_EXIT qty = min(scaled_budget/price,
+      held_qty); with conviction = clamp(|z|/z_entry, 0.25, 1.0) an exit
+      that fires at |z| < z_exit would scale its own budget to ~25% and
+      only ever partially exit, leaving a residue that re-exits dust-
+      sized forever (and the dust filter would then skip it entirely).
+    - Fix: SELL_EXIT legs are MECHANICAL full-quantity exits of held qty
+      (no conviction/vol/regime/cost scaling) — the exit fires because
+      the spread reverted, not because of edge strength; same precedent
+      as overnight exits. Unheld legs emit nothing (never a short).
+
+17. Pairs Kelly could contaminate the validated intraday/overnight edge
+    — ADDRESSED BY DESIGN (2026-09-12)
+    - Fix: pairs Kelly stats live in a separate file
+      (data/pairs_backtest_stats.json, written by `pairs-backtest`)
+      with their own cap mapping (PAIR_KELLY_FRACTION_CAP=0.5,
+      PAIR_KELLY_MAX_MULT=1.5, PAIR_KELLY_ENABLED) — same isolation
+      pattern as the overnight stats file. The 0.5 fraction cap is a
+      ceiling pending Phase 4 validation: the long-only conditioned
+      variant keeps full market beta, so market-neutral stat-arb Sharpe
+      ranges do not transfer; ship gate is aggregate walk-forward
+      Sharpe > 1, else keep PAIR_KELLY_MAX_MULT=1.0 (neutral).
+      Formation stats additionally never re-fit between formations
+      (persisted pair book), so a stale/missing book trades no pairs.

@@ -1,0 +1,1621 @@
+{
+  "generated_at": "2026-09-15T00:26:51.305665+00:00",
+  "mode": "overnight",
+  "period": "2y",
+  "train_ratio": 0.7,
+  "step_days": 63,
+  "min_train_days": 252,
+  "horizon_days": 1,
+  "min_trades": 30,
+  "folds": [
+    {
+      "ticker": "AAPL",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 14,
+        "win_rate": 0.5,
+        "avg_win": 0.005488512456301838,
+        "avg_loss": 0.0046909624067816525,
+        "payoff_ratio": 1.170018427000647,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 0.8170364917582038,
+        "sortino": 1.0235547276556645,
+        "calmar": 4.647064839991862,
+        "omega": 1.170018427000647
+      }
+    },
+    {
+      "ticker": "AAPL",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 22,
+        "win_rate": 0.4090909090909091,
+        "avg_win": 0.003189473853238262,
+        "avg_loss": 0.0029331153716847247,
+        "payoff_ratio": 1.0874014312659956,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -1.7380073565059706,
+        "sortino": -1.821937108545466,
+        "calmar": -8.70084923380344,
+        "omega": 0.7528163754918431
+      }
+    },
+    {
+      "ticker": "AAPL",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 5,
+        "win_rate": 0.0,
+        "avg_win": 0.0,
+        "avg_loss": 0.0025526475377789736,
+        "payoff_ratio": 0.0,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -18.225691931349612,
+        "sortino": -18.225691931349612,
+        "calmar": -15.874507866387546,
+        "omega": 0.0
+      }
+    },
+    {
+      "ticker": "MSFT",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 13,
+        "win_rate": 0.5384615384615384,
+        "avg_win": 0.011434462735469806,
+        "avg_loss": 0.012339051003952125,
+        "payoff_ratio": 0.9266889918687762,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 0.5318488895930762,
+        "sortino": 0.527807437040105,
+        "calmar": 1.3021818728248944,
+        "omega": 1.081137157180239
+      }
+    },
+    {
+      "ticker": "MSFT",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 17,
+        "win_rate": 0.4117647058823529,
+        "avg_win": 0.011740724730735333,
+        "avg_loss": 0.012030397344416266,
+        "payoff_ratio": 0.975921608789141,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -2.3757768566640367,
+        "sortino": -2.500064273672158,
+        "calmar": -13.05360773501474,
+        "omega": 0.6831451261523988
+      }
+    },
+    {
+      "ticker": "MSFT",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 2,
+        "win_rate": 1.0,
+        "avg_win": 0.0025693999538777823,
+        "avg_loss": 0.0,
+        "payoff_ratio": null,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 18.30754216314408,
+        "sortino": null,
+        "calmar": null,
+        "omega": null
+      }
+    },
+    {
+      "ticker": "GOOGL",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 20,
+        "win_rate": 0.45,
+        "avg_win": 0.004834437647205098,
+        "avg_loss": 0.007628094965512533,
+        "payoff_ratio": 0.6337673651235504,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -4.172547519222731,
+        "sortino": -4.498487449213466,
+        "calmar": -12.91353683800106,
+        "omega": 0.5185369351010867
+      }
+    },
+    {
+      "ticker": "GOOGL",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 13,
+        "win_rate": 0.3076923076923077,
+        "avg_win": 0.009839036561375275,
+        "avg_loss": 0.013376249261404004,
+        "payoff_ratio": 0.7355601984604873,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -6.890346106695506,
+        "sortino": -7.635515612589666,
+        "calmar": -12.747249302550513,
+        "omega": 0.32691564376021653
+      }
+    },
+    {
+      "ticker": "GOOGL",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 2,
+        "win_rate": 0.5,
+        "avg_win": 0.006376037232966647,
+        "avg_loss": 0.008225071850624155,
+        "payoff_ratio": 0.7751953233676379,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -2.01029349313021,
+        "sortino": -2.01029349313021,
+        "calmar": -3.6698800608122126,
+        "omega": 0.7751953233676379
+      }
+    },
+    {
+      "ticker": "AMZN",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 20,
+        "win_rate": 0.4,
+        "avg_win": 0.009215992200595657,
+        "avg_loss": 0.0074631788400423655,
+        "payoff_ratio": 1.234861497777446,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -1.1659925465135104,
+        "sortino": -1.3137269142692527,
+        "calmar": -4.267231001145451,
+        "omega": 0.8232409985182974
+      }
+    },
+    {
+      "ticker": "AMZN",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 14,
+        "win_rate": 0.42857142857142855,
+        "avg_win": 0.016134884658363786,
+        "avg_loss": 0.010790668675224241,
+        "payoff_ratio": 1.4952627259708247,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 0.7235493775986194,
+        "sortino": 0.8187464381311896,
+        "calmar": 4.910878164154613,
+        "omega": 1.1214470444781186
+      }
+    },
+    {
+      "ticker": "AMZN",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 1,
+        "win_rate": 0.0,
+        "avg_win": 0.0,
+        "avg_loss": 0.010355309623715114,
+        "payoff_ratio": 0.0,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": null,
+        "sortino": null,
+        "calmar": -15.874507866387544,
+        "omega": 0.0
+      }
+    },
+    {
+      "ticker": "NVDA",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 13,
+        "win_rate": 0.6153846153846154,
+        "avg_win": 0.01197885480640637,
+        "avg_loss": 0.0063477416713842326,
+        "payoff_ratio": 1.8871049621328049,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 6.5152520251468955,
+        "sortino": 6.612788662554758,
+        "calmar": 52.48155653147429,
+        "omega": 3.0193679394124877
+      }
+    },
+    {
+      "ticker": "NVDA",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 13,
+        "win_rate": 0.6923076923076923,
+        "avg_win": 0.010184188053174868,
+        "avg_loss": 0.016796491230002653,
+        "payoff_ratio": 0.6063283047463752,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 2.087365166484319,
+        "sortino": 1.5723969051722428,
+        "calmar": 9.25620552688344,
+        "omega": 1.3642386856793443
+      }
+    },
+    {
+      "ticker": "NVDA",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 5,
+        "win_rate": 0.2,
+        "avg_win": 0.0005156257567171529,
+        "avg_loss": 0.010769005370311668,
+        "payoff_ratio": 0.04788053668713419,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -24.818203619427905,
+        "sortino": -33.085857797167954,
+        "calmar": -15.874507866387544,
+        "omega": 0.011970134171783548
+      }
+    },
+    {
+      "ticker": "META",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 13,
+        "win_rate": 0.38461538461538464,
+        "avg_win": 0.019546423495512187,
+        "avg_loss": 0.008122511544795763,
+        "payoff_ratio": 2.4064506880308376,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 2.758979307532435,
+        "sortino": 3.5186544692633372,
+        "calmar": 20.336096675012218,
+        "omega": 1.5040316800192737
+      }
+    },
+    {
+      "ticker": "META",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 13,
+        "win_rate": 0.6923076923076923,
+        "avg_win": 0.005176919858975911,
+        "avg_loss": 0.014879290860590949,
+        "payoff_ratio": 0.3479278621192504,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -1.094716512712243,
+        "sortino": -0.6578273467444353,
+        "calmar": -4.588979129001422,
+        "omega": 0.7828376897683135
+      }
+    },
+    {
+      "ticker": "META",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 6,
+        "win_rate": 0.0,
+        "avg_win": 0.0,
+        "avg_loss": 0.014840806219825845,
+        "payoff_ratio": 0.0,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -11.551721412130584,
+        "sortino": -11.551721412130584,
+        "calmar": -15.874507866387544,
+        "omega": 0.0
+      }
+    },
+    {
+      "ticker": "TSLA",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 15,
+        "win_rate": 0.4666666666666667,
+        "avg_win": 0.01592128287172507,
+        "avg_loss": 0.009310976315792904,
+        "payoff_ratio": 1.709947736062869,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 2.4057669167506015,
+        "sortino": 2.8856160435474183,
+        "calmar": 18.66216870990069,
+        "omega": 1.4962042690550104
+      }
+    },
+    {
+      "ticker": "TSLA",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 13,
+        "win_rate": 0.38461538461538464,
+        "avg_win": 0.012800622923829597,
+        "avg_loss": 0.007936082633909242,
+        "payoff_ratio": 1.6129649241724349,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 0.05646790503318216,
+        "sortino": 0.06723190954688385,
+        "calmar": -0.13444540805056704,
+        "omega": 1.0081030776077717
+      }
+    },
+    {
+      "ticker": "TSLA",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 4,
+        "win_rate": 1.0,
+        "avg_win": 0.016473588060337108,
+        "avg_loss": 0.0,
+        "payoff_ratio": null,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 21.16201233258419,
+        "sortino": null,
+        "calmar": null,
+        "omega": null
+      }
+    },
+    {
+      "ticker": "SPY",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 18,
+        "win_rate": 0.3888888888888889,
+        "avg_win": 0.005599640775815429,
+        "avg_loss": 0.0037736033982532276,
+        "payoff_ratio": 1.4838975336961642,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -0.3546253807975685,
+        "sortino": -0.45997111678493735,
+        "calmar": -1.612024713070364,
+        "omega": 0.9442984305339227
+      }
+    },
+    {
+      "ticker": "SPY",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 17,
+        "win_rate": 0.5882352941176471,
+        "avg_win": 0.0030763039289441797,
+        "avg_loss": 0.003114847151271543,
+        "payoff_ratio": 0.9876259667150508,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 2.1397761858379405,
+        "sortino": 2.04165765956934,
+        "calmar": 8.642007536744863,
+        "omega": 1.4108942381643583
+      }
+    },
+    {
+      "ticker": "SPY",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 3,
+        "win_rate": 0.6666666666666666,
+        "avg_win": 0.004587603956220931,
+        "avg_loss": 0.002647755002771701,
+        "payoff_ratio": 1.7326391419971159,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 7.253195144632564,
+        "sortino": 7.160674622317571,
+        "calmar": 39.01622006337257,
+        "omega": 3.4652782839942318
+      }
+    },
+    {
+      "ticker": "QQQ",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 18,
+        "win_rate": 0.2777777777777778,
+        "avg_win": 0.005043354969215219,
+        "avg_loss": 0.005084912567948767,
+        "payoff_ratio": 0.9918272736889335,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -6.160279876340413,
+        "sortino": -9.359609193137826,
+        "calmar": -13.002783761929816,
+        "omega": 0.38147202834189753
+      }
+    },
+    {
+      "ticker": "QQQ",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 17,
+        "win_rate": 0.5294117647058824,
+        "avg_win": 0.008322739352791486,
+        "avg_loss": 0.00326807669223117,
+        "payoff_ratio": 2.5466781035390618,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 6.286493027723643,
+        "sortino": 6.7200473258819535,
+        "calmar": 72.49210069364716,
+        "omega": 2.8650128664814445
+      }
+    },
+    {
+      "ticker": "QQQ",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 1,
+        "win_rate": 0.0,
+        "avg_win": 0.0,
+        "avg_loss": 0.0030725684339532044,
+        "payoff_ratio": 0.0,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": null,
+        "sortino": null,
+        "calmar": -15.874507866387544,
+        "omega": 0.0
+      }
+    },
+    {
+      "ticker": "AMD",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 23,
+        "win_rate": 0.30434782608695654,
+        "avg_win": 0.013185791596699097,
+        "avg_loss": 0.021579525626313364,
+        "payoff_ratio": 0.611032504839716,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -6.069596965954635,
+        "sortino": -6.44080707852225,
+        "calmar": -14.30669746150995,
+        "omega": 0.26732672086737574
+      }
+    },
+    {
+      "ticker": "AMD",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 14,
+        "win_rate": 0.5,
+        "avg_win": 0.043500879759348764,
+        "avg_loss": 0.019431055237434696,
+        "payoff_ratio": 2.238729663818906,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 5.2367739054996525,
+        "sortino": 5.289370489692056,
+        "calmar": 40.14294914719091,
+        "omega": 2.238729663818906
+      }
+    },
+    {
+      "ticker": "AMD",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 2,
+        "win_rate": 0.5,
+        "avg_win": 0.020600459865913523,
+        "avg_loss": 0.005990534426126404,
+        "payoff_ratio": 3.4388350688828577,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 8.721952017817683,
+        "sortino": 8.721952017817683,
+        "calmar": 38.38828432360989,
+        "omega": 3.4388350688828577
+      }
+    },
+    {
+      "ticker": "COST",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 10,
+        "win_rate": 0.5,
+        "avg_win": 0.0038240138445162276,
+        "avg_loss": 0.0022413537670644247,
+        "payoff_ratio": 1.7061179277935519,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 2.6989179631968687,
+        "sortino": 3.7290674798132923,
+        "calmar": 16.70763800822289,
+        "omega": 1.7061179277935519
+      }
+    },
+    {
+      "ticker": "COST",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 14,
+        "win_rate": 0.42857142857142855,
+        "avg_win": 0.006635590556733295,
+        "avg_loss": 0.0032486235601626307,
+        "payoff_ratio": 2.04258524690411,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 2.4461490938951282,
+        "sortino": 3.2016968723459924,
+        "calmar": 14.918817413376926,
+        "omega": 1.5319389351780823
+      }
+    },
+    {
+      "ticker": "COST",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 9,
+        "win_rate": 0.5555555555555556,
+        "avg_win": 0.003921119230096903,
+        "avg_loss": 0.0027745417962471985,
+        "payoff_ratio": 1.4132492923337998,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 4.096121166226694,
+        "sortino": 3.6077304769429,
+        "calmar": 12.170879263896579,
+        "omega": 1.7665616154172499
+      }
+    },
+    {
+      "ticker": "AVGO",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 11,
+        "win_rate": 0.36363636363636365,
+        "avg_win": 0.00786675138288917,
+        "avg_loss": 0.010538744467407277,
+        "payoff_ratio": 0.7464600178150571,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -4.834475973691597,
+        "sortino": -5.569412757485552,
+        "calmar": -12.161978334894082,
+        "omega": 0.42654858160860404
+      }
+    },
+    {
+      "ticker": "AVGO",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 12,
+        "win_rate": 0.3333333333333333,
+        "avg_win": 0.05063968679315203,
+        "avg_loss": 0.018162950433074074,
+        "payoff_ratio": 2.7880760331173398,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 1.5600661423777051,
+        "sortino": 2.4982404417600153,
+        "calmar": 7.030822385228744,
+        "omega": 1.3940380165586699
+      }
+    },
+    {
+      "ticker": "AVGO",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 2,
+        "win_rate": 0.5,
+        "avg_win": 0.0029833564604164753,
+        "avg_loss": 0.010790536891000624,
+        "payoff_ratio": 0.2764789639804312,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -8.997829734674413,
+        "sortino": -8.997829734674413,
+        "calmar": -11.532899693388634,
+        "omega": 0.2764789639804312
+      }
+    },
+    {
+      "ticker": "ADBE",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 10,
+        "win_rate": 0.6,
+        "avg_win": 0.011050303498862879,
+        "avg_loss": 0.004424846190149406,
+        "payoff_ratio": 2.4973305339885186,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 5.809212693690066,
+        "sortino": 8.121652465941924,
+        "calmar": 91.45994860435387,
+        "omega": 3.745995800982778
+      }
+    },
+    {
+      "ticker": "ADBE",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 14,
+        "win_rate": 0.5,
+        "avg_win": 0.021012540442863492,
+        "avg_loss": 0.024787501755795218,
+        "payoff_ratio": 0.8477070682587383,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -0.9750707791527347,
+        "sortino": -0.8789411773620147,
+        "calmar": -5.158229407060195,
+        "omega": 0.8477070682587383
+      }
+    },
+    {
+      "ticker": "ADBE",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 6,
+        "win_rate": 0.8333333333333334,
+        "avg_win": 0.009938424530151613,
+        "avg_loss": 0.029158255965394897,
+        "payoff_ratio": 0.3408442720972943,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 3.511954601055925,
+        "sortino": 1.6674818633836768,
+        "calmar": 10.873460631861464,
+        "omega": 1.7042213604864715
+      }
+    },
+    {
+      "ticker": "CRM",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 8,
+        "win_rate": 0.75,
+        "avg_win": 0.007173299262169104,
+        "avg_loss": 0.015238422931393547,
+        "payoff_ratio": 0.47073764092680354,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 2.2538655184520517,
+        "sortino": 1.4693193765337833,
+        "calmar": 10.981330181828124,
+        "omega": 1.4122129227804106
+      }
+    },
+    {
+      "ticker": "CRM",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 15,
+        "win_rate": 0.5333333333333333,
+        "avg_win": 0.026327253807041665,
+        "avg_loss": 0.01934231220654316,
+        "payoff_ratio": 1.361122368717408,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 2.928468635909413,
+        "sortino": 2.9468443001159743,
+        "calmar": 26.805896675634084,
+        "omega": 1.5555684213913237
+      }
+    },
+    {
+      "ticker": "CRM",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 10,
+        "win_rate": 0.7,
+        "avg_win": 0.003688596064212219,
+        "avg_loss": 0.01121015810007179,
+        "payoff_ratio": 0.3290405033795729,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -1.323212540049454,
+        "sortino": -0.8643573437195498,
+        "calmar": -3.908170404116353,
+        "omega": 0.7677611745523368
+      }
+    },
+    {
+      "ticker": "NFLX",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 18,
+        "win_rate": 0.5,
+        "avg_win": 0.015554378588397082,
+        "avg_loss": 0.019562910159554026,
+        "payoff_ratio": 0.7950953340549244,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -0.8405309596759549,
+        "sortino": -0.8070712682703589,
+        "calmar": -5.36607111954834,
+        "omega": 0.7950953340549244
+      }
+    },
+    {
+      "ticker": "NFLX",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 14,
+        "win_rate": 0.35714285714285715,
+        "avg_win": 0.008383425418470748,
+        "avg_loss": 0.007720409545271163,
+        "payoff_ratio": 1.0858783292922185,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -3.4030142423782346,
+        "sortino": -4.320457344930853,
+        "calmar": -7.93652229581405,
+        "omega": 0.6032657384956769
+      }
+    },
+    {
+      "ticker": "NFLX",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 9,
+        "win_rate": 0.4444444444444444,
+        "avg_win": 0.0024262129420832,
+        "avg_loss": 0.0031768639333611846,
+        "payoff_ratio": 0.7637132067901375,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -3.2732970658779115,
+        "sortino": -3.246950067706631,
+        "calmar": -7.749671386174862,
+        "omega": 0.61097056543211
+      }
+    },
+    {
+      "ticker": "JPM",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 18,
+        "win_rate": 0.5,
+        "avg_win": 0.005849781871827325,
+        "avg_loss": 0.011307089940102025,
+        "payoff_ratio": 0.5173552083529762,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -3.5576009711275525,
+        "sortino": -2.9701208778921977,
+        "calmar": -12.57086154618933,
+        "omega": 0.5173552083529762
+      }
+    },
+    {
+      "ticker": "JPM",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 25,
+        "win_rate": 0.24,
+        "avg_win": 0.004145450144890539,
+        "avg_loss": 0.006942496023497291,
+        "payoff_ratio": 0.5971123542397455,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -10.237715770419774,
+        "sortino": -11.960622406060141,
+        "calmar": -15.873521085255533,
+        "omega": 0.18856179607570908
+      }
+    },
+    {
+      "ticker": "JPM",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 2,
+        "win_rate": 0.0,
+        "avg_win": 0.0,
+        "avg_loss": 0.004052765525794588,
+        "payoff_ratio": 0.0,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -123.85852583072779,
+        "sortino": -123.85852583072779,
+        "calmar": -15.874507866387544,
+        "omega": 0.0
+      }
+    },
+    {
+      "ticker": "WMT",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 13,
+        "win_rate": 0.46153846153846156,
+        "avg_win": 0.004489481994849794,
+        "avg_loss": 0.0025230204616471597,
+        "payoff_ratio": 1.7794076834076982,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 2.5699008381847794,
+        "sortino": 3.0542575917030166,
+        "calmar": 12.254547871921499,
+        "omega": 1.525206585778027
+      }
+    },
+    {
+      "ticker": "WMT",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 15,
+        "win_rate": 0.4,
+        "avg_win": 0.006203199844707852,
+        "avg_loss": 0.007426085218910034,
+        "payoff_ratio": 0.8353257014761714,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -3.596422444030928,
+        "sortino": -4.265341638907886,
+        "calmar": -15.115009731810877,
+        "omega": 0.5568838009841143
+      }
+    },
+    {
+      "ticker": "WMT",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 7,
+        "win_rate": 0.42857142857142855,
+        "avg_win": 0.0040300717960034165,
+        "avg_loss": 0.003205633921488843,
+        "payoff_ratio": 1.2571840374498118,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -0.3594823900173584,
+        "sortino": -0.36339620737842565,
+        "calmar": -1.4420108040382174,
+        "omega": 0.9428880280873588
+      }
+    },
+    {
+      "ticker": "XLK",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 16,
+        "win_rate": 0.1875,
+        "avg_win": 0.008023823871389743,
+        "avg_loss": 0.006704226572233036,
+        "payoff_ratio": 1.1968306537583464,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -7.9685680601020765,
+        "sortino": -10.874329237600161,
+        "calmar": -12.740117497106505,
+        "omega": 0.2761916893288492
+      }
+    },
+    {
+      "ticker": "XLK",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 16,
+        "win_rate": 0.3125,
+        "avg_win": 0.01841019868765399,
+        "avg_loss": 0.005970058153108753,
+        "payoff_ratio": 3.0837553362972443,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 1.9867323325866448,
+        "sortino": 3.022312646407529,
+        "calmar": 11.262512655963327,
+        "omega": 1.401706971044202
+      }
+    },
+    {
+      "ticker": "XLK",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 1,
+        "win_rate": 0.0,
+        "avg_win": 0.0,
+        "avg_loss": 0.003634204528359053,
+        "payoff_ratio": 0.0,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": null,
+        "sortino": null,
+        "calmar": -15.874507866387544,
+        "omega": 0.0
+      }
+    },
+    {
+      "ticker": "XLF",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 18,
+        "win_rate": 0.6111111111111112,
+        "avg_win": 0.0031381029655303287,
+        "avg_loss": 0.004300220843919915,
+        "payoff_ratio": 0.7297539078643587,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 0.9185484823080621,
+        "sortino": 0.7637512477210079,
+        "calmar": 4.546842070217721,
+        "omega": 1.1467561409297065
+      }
+    },
+    {
+      "ticker": "XLF",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 22,
+        "win_rate": 0.45454545454545453,
+        "avg_win": 0.004454372031995868,
+        "avg_loss": 0.006393674302416608,
+        "payoff_ratio": 0.6966842258937487,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -3.755428241156202,
+        "sortino": -4.165316940595886,
+        "calmar": -8.90248089342204,
+        "omega": 0.5805701882447906
+      }
+    },
+    {
+      "ticker": "XLF",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 2,
+        "win_rate": 1.0,
+        "avg_win": 0.005465939620862503,
+        "avg_loss": 0.0,
+        "payoff_ratio": null,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 30.713064667845508,
+        "sortino": null,
+        "calmar": null,
+        "omega": null
+      }
+    },
+    {
+      "ticker": "XLV",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 10,
+        "win_rate": 0.4,
+        "avg_win": 0.006301648206384097,
+        "avg_loss": 0.004418626252170525,
+        "payoff_ratio": 1.4261555168393323,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -0.341465366002422,
+        "sortino": -0.404885526763116,
+        "calmar": -1.1831957010749288,
+        "omega": 0.950770344559555
+      }
+    },
+    {
+      "ticker": "XLV",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 19,
+        "win_rate": 0.15789473684210525,
+        "avg_win": 0.008131060780066165,
+        "avg_loss": 0.005270015391456273,
+        "payoff_ratio": 1.5428912775564578,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -7.3845907498043015,
+        "sortino": -10.41768982008745,
+        "calmar": -11.819190926367355,
+        "omega": 0.2892921145418358
+      }
+    },
+    {
+      "ticker": "XLV",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 11,
+        "win_rate": 0.7272727272727273,
+        "avg_win": 0.003626214679961104,
+        "avg_loss": 0.008512551487723452,
+        "payoff_ratio": 0.4259844636699963,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 0.7223933748575664,
+        "sortino": 0.4601128248789025,
+        "calmar": 2.1320585036063084,
+        "omega": 1.1359585697866568
+      }
+    },
+    {
+      "ticker": "XLE",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 24,
+        "win_rate": 0.25,
+        "avg_win": 0.012579385624565379,
+        "avg_loss": 0.0045852631679542556,
+        "payoff_ratio": 2.7434380893295054,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -0.47515925362184913,
+        "sortino": -0.8298988453491479,
+        "calmar": -2.583329395651433,
+        "omega": 0.9144793631098352
+      }
+    },
+    {
+      "ticker": "XLE",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 16,
+        "win_rate": 0.25,
+        "avg_win": 0.00711417676741774,
+        "avg_loss": 0.007885172550390368,
+        "payoff_ratio": 0.90222207845858,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -7.279039000985788,
+        "sortino": -9.480058800292827,
+        "calmar": -12.258052957307598,
+        "omega": 0.3007406928195267
+      }
+    },
+    {
+      "ticker": "XLE",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 10,
+        "win_rate": 0.3,
+        "avg_win": 0.005110824070985324,
+        "avg_loss": 0.008592918684164738,
+        "payoff_ratio": 0.5947716089067255,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -9.726864292397698,
+        "sortino": -12.068996113748177,
+        "calmar": -11.952203747606417,
+        "omega": 0.2549021181028824
+      }
+    },
+    {
+      "ticker": "XLY",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 17,
+        "win_rate": 0.35294117647058826,
+        "avg_win": 0.0030741632859621983,
+        "avg_loss": 0.006365068849453193,
+        "payoff_ratio": 0.48297408224049165,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -7.555386734312758,
+        "sortino": -7.543380908419915,
+        "calmar": -14.80113616091727,
+        "omega": 0.26344040849481365
+      }
+    },
+    {
+      "ticker": "XLY",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 8,
+        "win_rate": 0.625,
+        "avg_win": 0.0026356457941125065,
+        "avg_loss": 0.004499670571603535,
+        "payoff_ratio": 0.5857419453649578,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -0.14209097493113998,
+        "sortino": -0.10029597216335964,
+        "calmar": -0.541719437065529,
+        "omega": 0.9762365756082632
+      }
+    },
+    {
+      "ticker": "XLY",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 5,
+        "win_rate": 0.4,
+        "avg_win": 0.004982125124889936,
+        "avg_loss": 0.007993251243044397,
+        "payoff_ratio": 0.6232914459213706,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -6.5686414135719655,
+        "sortino": -7.799116785878381,
+        "calmar": -9.372992806340038,
+        "omega": 0.41552763061424713
+      }
+    },
+    {
+      "ticker": "XLI",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 19,
+        "win_rate": 0.47368421052631576,
+        "avg_win": 0.007097871316307926,
+        "avg_loss": 0.004499701576946269,
+        "payoff_ratio": 1.5774093448047972,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 2.08839733942322,
+        "sortino": 2.447888275177642,
+        "calmar": 16.518816002796566,
+        "omega": 1.4196684103243176
+      }
+    },
+    {
+      "ticker": "XLI",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 12,
+        "win_rate": 0.5,
+        "avg_win": 0.007804849732336083,
+        "avg_loss": 0.0054151789019941665,
+        "payoff_ratio": 1.4412912063647443,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 2.317321019991814,
+        "sortino": 2.2105494004488113,
+        "calmar": 8.055605564872772,
+        "omega": 1.4412912063647443
+      }
+    },
+    {
+      "ticker": "XLI",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 5,
+        "win_rate": 0.6,
+        "avg_win": 0.00618889476879847,
+        "avg_loss": 0.0059054264701156045,
+        "payoff_ratio": 1.0480013255803549,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 3.3348064795126002,
+        "sortino": 2.9403909527117573,
+        "calmar": 8.9913962620901,
+        "omega": 1.5720019883705323
+      }
+    },
+    {
+      "ticker": "XLP",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 13,
+        "win_rate": 0.38461538461538464,
+        "avg_win": 0.003999387694754319,
+        "avg_loss": 0.004060528467378033,
+        "payoff_ratio": 0.9849426563278859,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -3.0398474495623677,
+        "sortino": -3.9490594049617878,
+        "calmar": -10.325615524335092,
+        "omega": 0.6155891602049287
+      }
+    },
+    {
+      "ticker": "XLP",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 11,
+        "win_rate": 0.5454545454545454,
+        "avg_win": 0.007833683848827488,
+        "avg_loss": 0.005676731885096498,
+        "payoff_ratio": 1.3799636846323111,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 3.3053497418300477,
+        "sortino": 3.196115804040306,
+        "calmar": 23.393072078559666,
+        "omega": 1.6559564215587734
+      }
+    },
+    {
+      "ticker": "XLP",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 4,
+        "win_rate": 0.75,
+        "avg_win": 0.0044174347143046315,
+        "avg_loss": 0.006821396775181232,
+        "payoff_ratio": 0.6475850709017389,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 5.135649296993254,
+        "sortino": 3.0278203949282605,
+        "calmar": 14.886203086558476,
+        "omega": 1.942755212705217
+      }
+    },
+    {
+      "ticker": "XLU",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 14,
+        "win_rate": 0.42857142857142855,
+        "avg_win": 0.0032092792844667373,
+        "avg_loss": 0.004784600925942975,
+        "payoff_ratio": 0.6707517166302088,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -4.280696181963582,
+        "sortino": -5.630397052864823,
+        "calmar": -9.560572727107875,
+        "omega": 0.5030637874726567
+      }
+    },
+    {
+      "ticker": "XLU",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 17,
+        "win_rate": 0.29411764705882354,
+        "avg_win": 0.004188760769076283,
+        "avg_loss": 0.003291123676282722,
+        "payoff_ratio": 1.2727448680407627,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -4.275010738456691,
+        "sortino": -6.4107273197679335,
+        "calmar": -11.450104264216383,
+        "omega": 0.5303103616836512
+      }
+    },
+    {
+      "ticker": "XLU",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 5,
+        "win_rate": 0.4,
+        "avg_win": 0.0013231818924389627,
+        "avg_loss": 0.0076320170995972285,
+        "payoff_ratio": 0.17337250102712587,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -8.963939321837827,
+        "sortino": -7.889880075712552,
+        "calmar": -15.134379037675796,
+        "omega": 0.11558166735141724
+      }
+    },
+    {
+      "ticker": "XLB",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 18,
+        "win_rate": 0.3888888888888889,
+        "avg_win": 0.005971785637103639,
+        "avg_loss": 0.004497275625425335,
+        "payoff_ratio": 1.3278673878341292,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -1.0478515629727032,
+        "sortino": -1.1783487626514921,
+        "calmar": -4.407020443063337,
+        "omega": 0.8450065195308094
+      }
+    },
+    {
+      "ticker": "XLB",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 12,
+        "win_rate": 0.16666666666666666,
+        "avg_win": 0.0028085932837063066,
+        "avg_loss": 0.004995531519632013,
+        "payoff_ratio": 0.5622211115411392,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -10.725501494874614,
+        "sortino": -11.200475620048087,
+        "calmar": -15.874507866387544,
+        "omega": 0.11244422230822784
+      }
+    },
+    {
+      "ticker": "XLB",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 5,
+        "win_rate": 0.4,
+        "avg_win": 0.0009962741910963246,
+        "avg_loss": 0.009232678996393276,
+        "payoff_ratio": 0.10790737894012309,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -14.479059085352304,
+        "sortino": -15.46973779803918,
+        "calmar": -15.231785073271187,
+        "omega": 0.07193825262674873
+      }
+    },
+    {
+      "ticker": "XLC",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 11,
+        "win_rate": 0.5454545454545454,
+        "avg_win": 0.00487100374988958,
+        "avg_loss": 0.0038103044240646476,
+        "payoff_ratio": 1.2783765305275607,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 2.7830351552604853,
+        "sortino": 2.9518846746608487,
+        "calmar": 17.686254045934085,
+        "omega": 1.5340518366330729
+      }
+    },
+    {
+      "ticker": "XLC",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 15,
+        "win_rate": 0.4666666666666667,
+        "avg_win": 0.005084637721093165,
+        "avg_loss": 0.00474394547113112,
+        "payoff_ratio": 1.0718162238658304,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -0.37101476767510805,
+        "sortino": -0.46119265425949846,
+        "calmar": -1.9891323797467062,
+        "omega": 0.9378391958826016
+      }
+    },
+    {
+      "ticker": "XLC",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 2,
+        "win_rate": 1.0,
+        "avg_win": 0.002522971522631312,
+        "avg_loss": 0.0,
+        "payoff_ratio": null,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 36.679964908134366,
+        "sortino": null,
+        "calmar": null,
+        "omega": null
+      }
+    },
+    {
+      "ticker": "XLRE",
+      "fold": 0,
+      "train_bars": 349,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 21,
+        "win_rate": 0.47619047619047616,
+        "avg_win": 0.0029436126301025877,
+        "avg_loss": 0.004197026239977682,
+        "payoff_ratio": 0.7013567373165245,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -2.5328295889266492,
+        "sortino": -2.7489783162167107,
+        "calmar": -10.010927809340894,
+        "omega": 0.6375970339241133
+      }
+    },
+    {
+      "ticker": "XLRE",
+      "fold": 1,
+      "train_bars": 412,
+      "test_bars": 63,
+      "aggregate": {
+        "n_trades": 12,
+        "win_rate": 0.4166666666666667,
+        "avg_win": 0.0007251081356106637,
+        "avg_loss": 0.0038770023706860162,
+        "payoff_ratio": 0.18702803513693994,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -9.727241795266107,
+        "sortino": -8.910814090086733,
+        "calmar": -15.85148459441845,
+        "omega": 0.13359145366924283
+      }
+    },
+    {
+      "ticker": "XLRE",
+      "fold": 2,
+      "train_bars": 475,
+      "test_bars": 24,
+      "aggregate": {
+        "n_trades": 6,
+        "win_rate": 0.5,
+        "avg_win": 0.0033962503968089455,
+        "avg_loss": 0.001751354603654461,
+        "payoff_ratio": 1.9392134463929611,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": 3.769048139409372,
+        "sortino": 4.335318466433464,
+        "calmar": 20.169300677792823,
+        "omega": 1.9392134463929611
+      }
+    }
+  ],
+  "aggregate_oos": {
+    "n_trades": 990,
+    "win_rate": 0.43333333333333335,
+    "avg_win": 0.008691318563501098,
+    "avg_loss": 0.007811533822237447,
+    "payoff_ratio": 1.1126263754704777,
+    "kelly_fraction": null,
+    "usable": false,
+    "sharpe": -0.7346019954029799,
+    "sortino": -0.8195888296129201,
+    "calmar": -15.4455787851816,
+    "omega": 0.8508319341833065
+  }
+}

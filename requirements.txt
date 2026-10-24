@@ -1,0 +1,8 @@
+openai
+python-dotenv
+pydantic>=2
+pytest
+rich
+prompt_toolkit
+kaggle
+

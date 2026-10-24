@@ -1,0 +1,10 @@
+{
+  "task_id": "TASK-2001",
+  "attempts": 1,
+  "verdict": "APPROVED",
+  "model_used": "builder_initial",
+  "duration_s": 0.02,
+  "escalated": false,
+  "reason": null,
+  "files_applied": 0
+}

@@ -1,0 +1,26 @@
+{
+  "tasks": [
+    {
+      "id": "TASK-1001",
+      "title": "Implement JWT middleware",
+      "objective": "Add JWT verification with RSA256 support",
+      "target_files": [
+        "src/middleware/auth.py"
+      ],
+      "dependencies": [],
+      "priority": "high",
+      "acceptance_criteria": [
+        "Validate token",
+        "Return 401 on invalid"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_JWT_EXPIRED_SIGNATURE_UNCHECKED",
+      "task_type": "feature",
+      "should_pass": true,
+      "completed_at": "2026-08-31T22:23:09Z"
+    }
+  ]
+}

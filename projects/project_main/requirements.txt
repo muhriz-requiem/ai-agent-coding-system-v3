@@ -1,0 +1,13 @@
+# project_main (trading system) -- Python dependencies.
+# Install from the workspace root:  pip install -r projects/project_main/requirements.txt
+openai
+pydantic>=2
+pandas
+numpy
+yfinance
+typer
+httpx
+python-dotenv
+edgartools>=5.31
+statsmodels>=0.14
+lxml

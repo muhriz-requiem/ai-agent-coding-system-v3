@@ -1,0 +1,537 @@
+{
+  "tasks": [
+    {
+      "id": "TASK-7001",
+      "title": "Project skeleton, config and logging",
+      "objective": "Create src/config.py (env-driven settings: ALPACA keys, watchlist default 10 tickers, tier routing model names, paper-only flag), src/logging_setup.py (structured logging), tests/conftest.py (adds project root to sys.path), and empty package dirs src/data, src/quant, src/agents, src/broker, src/pipeline, src/store.",
+      "target_files": [
+        "src/config.py",
+        "src/logging_setup.py",
+        "tests/conftest.py",
+        "tests/test_config.py"
+      ],
+      "dependencies": [],
+      "priority": "high",
+      "acceptance_criteria": [
+        "config loads from env with sane defaults (paper=True, watchlist of 10 defaults)",
+        "pytest passes from project root",
+        "no network calls anywhere"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 1,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_PROJECT_SKELETON",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-08-31T23:36:16Z",
+      "allow_test_edits": true
+    },
+    {
+      "id": "TASK-7002",
+      "title": "Quant node: z-score + momentum signals",
+      "objective": "Tests-first: implement src/quant/signals.py so the pre-seeded tests/test_signals.py passes. Exact API: compute_z_score(prices: pd.Series, window: int = 20) -> float (rolling mean/std with pandas defaults, ddof=1; zero or NaN std -> 0.0); compute_momentum_slope(prices: pd.Series, fast: int = 10, step: int = 5) -> float ((ma10.iloc[-1] - ma10.iloc[-step]) / step); generate_signal(prices: pd.Series) -> dict with keys signal/confidence/z_score/momentum. Rules: BUY when z < -1.5 AND slope > -0.5 with confidence min(0.95, abs(z)*0.4); SELL when z > 1.5 with confidence min(0.95, z*0.4); else HOLD with confidence 0.5. Insufficient data (< window+step samples) -> HOLD/0.5/0.0/0.0. No I/O; only pandas/numpy imports.",
+      "target_files": [
+        "src/quant/signals.py"
+      ],
+      "dependencies": [
+        "TASK-7001"
+      ],
+      "priority": "high",
+      "acceptance_criteria": [
+        "tests/test_signals.py collected and fully green (no skips)",
+        "entire pytest suite green",
+        "no network access"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_QUANT_SIGNAL_MATH",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-08-31T23:40:00Z"
+    },
+    {
+      "id": "TASK-7003A",
+      "title": "JSON disk cache with TTL",
+      "objective": "Tests-first: implement src/data/cache.py so tests/test_cache.py passes. Exact API: class Cache(root: pathlib.Path, ttl_seconds: float = 300.0) with set(key: str, value) -> None (atomic JSON write, creates root, sanitizes key into a safe filename ending .json), get(key: str) -> Any | None (None when missing, expired, or corrupt JSON), path_for(key: str) -> pathlib.Path. Expiry based on file mtime vs ttl_seconds.",
+      "target_files": [
+        "src/data/cache.py"
+      ],
+      "dependencies": [
+        "TASK-7001"
+      ],
+      "priority": "high",
+      "acceptance_criteria": [
+        "tests/test_cache.py collected and fully green",
+        "entire pytest suite green"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_CACHE_TTL",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-08-31T23:41:36Z"
+    },
+    {
+      "id": "TASK-7005A",
+      "title": "Pydantic message models with evidence citations",
+      "objective": "Tests-first: implement src/agents/models.py so tests/test_models.py passes. Exact models: AnalystReport(agent: str, ticker: str, stance: Literal['bullish','bearish','neutral'], confidence: float 0..1, thesis: str, citations: list[str] min_length=1); DebateRecord(ticker: str, bull_points: list[str], bear_points: list[str], winner: Literal['bull','bear','undecided'], citations: list[str] min_length=1); RiskDecision(ticker: str, approved: bool, veto_reasons: list[str] = [], quant_override: bool = False, narrative: str = ''); OrderPlan(ticker: str, side: Literal['buy','sell'], quantity: int > 0, limit_price: float > 0, rationale: str). Pydantic v2 only.",
+      "target_files": [
+        "src/agents/models.py"
+      ],
+      "dependencies": [
+        "TASK-7001"
+      ],
+      "priority": "high",
+      "acceptance_criteria": [
+        "tests/test_models.py collected and fully green",
+        "empty citations rejected by ValidationError"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_MESSAGE_MODELS",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-08-31T23:43:16Z"
+    },
+    {
+      "id": "TASK-7003B",
+      "title": "Market data adapter over the cache",
+      "objective": "Tests-first: implement src/data/market_data.py so tests/test_market_data.py passes. Exact API: class DataError(Exception); module-level def _download(ticker: str, period: str) -> pandas.DataFrame that wraps yfinance (import yfinance inside the function; progress=False) -- this is the ONLY yfinance seam; def fetch_ohlcv(ticker: str, period: str = '6mo', cache: Cache | None = None) -> pd.DataFrame: cache-first (cache key f'ohlcv:{ticker}:{period}'), on miss calls _download, raises DataError on empty/None frame, stores fetched frame in cache -- JSON-safe recipe (CRITICAL): build the payload via frame.reset_index().to_dict(orient='list') and then convert the datetime index column values to ISO-8601 strings via .isoformat(); a payload containing pd.Timestamp values makes Cache.set raise TypeError('Value is not JSON-serializable') and fails the real-test gate. On a cache hit rebuild with pd.DataFrame(stored), parse the index column back with pd.to_datetime, and set_index(index_col) (set index.name=None when the column is named 'index'). Cache API contract (src/data/cache.py, shipped by TASK-7003A -- read that file before writing code): `from src.data.cache import Cache`; `Cache(root: pathlib.Path, ttl_seconds: float = 300.0)`; `def get(self, key: str) -> Optional[Any]` -- takes EXACTLY one positional argument, returns the cached value or None on miss/expiry (no default parameter, no keyword args); `def set(self, key: str, value: Any) -> None` -- value must be JSON-serializable or it raises TypeError. On fetch miss: store with `cache.set(cache_key, payload)` where payload is the ISO-8601-stringified reset_index dict described above (pd.Timestamp values are NOT JSON-serializable); on hit: rebuild with `pd.DataFrame(cache.get(cache_key))` restoring the DatetimeIndex from the stored index column via pd.to_datetime + set_index. Never pass a raw pandas DataFrame to cache.set.",
+      "target_files": [
+        "src/data/market_data.py"
+      ],
+      "dependencies": [
+        "TASK-7003A"
+      ],
+      "priority": "high",
+      "acceptance_criteria": [
+        "tests/test_market_data.py collected and fully green",
+        "no yfinance import at module import time (lazy inside _download)",
+        "cache hit avoids second _download call"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_MARKET_DATA_INGEST",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-09-02T00:27:31Z"
+    },
+    {
+      "id": "TASK-7004A",
+      "title": "Fundamentals ingestion",
+      "objective": "Tests-first: implement src/data/fundamentals.py so tests/test_fundamentals.py passes. Exact API: class FundamentalsError(Exception); module-level def _raw_info(ticker: str) -> dict wrapping yfinance .info (lazy import inside the function); def fetch_fundamentals(ticker: str, cache: Cache | None = None) -> dict returning exactly the keys gross_margin, operating_margin, debt_to_equity, trailing_pe, market_cap mapped from yfinance keys grossMargins/operatingMargins/debtToEquity/trailingPE/marketCap; missing keys -> None; yfinance failure inside _raw_info must be re-raised as FundamentalsError by fetch_fundamentals; cache key f'fundamentals:{ticker}'.",
+      "target_files": [
+        "src/data/fundamentals.py"
+      ],
+      "dependencies": [
+        "TASK-7003A"
+      ],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "tests/test_fundamentals.py collected and fully green",
+        "missing yfinance fields degrade to None",
+        "typed error on adapter failure"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_FUNDAMENTALS_INGEST",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-09-01T22:05:08Z"
+    },
+    {
+      "id": "TASK-7004B",
+      "title": "News headlines ingestion",
+      "objective": "Tests-first: implement src/data/news.py so tests/test_news.py passes. Exact API: class NewsError(Exception); module-level def _raw_news(ticker: str) -> list[dict] wrapping yfinance .news (lazy import inside the function); def fetch_headlines(ticker: str, limit: int = 10, cache: Cache | None = None) -> list[dict] returning items shaped exactly {'title','publisher','url'} (map from yfinance news item fields title/publisher/link), deduplicated by title preserving first-seen order, capped at limit, [] when source is empty; failures re-raised as NewsError; cache key f'news:{ticker}'.",
+      "target_files": [
+        "src/data/news.py"
+      ],
+      "dependencies": [
+        "TASK-7003A"
+      ],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "tests/test_news.py collected and fully green",
+        "dedup + limit verified",
+        "typed error on adapter failure"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_NEWS_INGEST",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-09-01T22:09:50Z"
+    },
+    {
+      "id": "TASK-7005B",
+      "title": "Tiered LLM client with retries + strict JSON",
+      "objective": "Tests-first: implement src/agents/llm.py so tests/test_llm.py passes. Exact API: class LLMError(Exception); class LLMClient(api_key: str | None = None, model: str | None = None, base_url: str | None = None) storing self.model (default from settings tier 'fast' or 'z-ai/glm-5.3-flash'); async def _chat(self, system: str, user: str, effort: str) -> str -- the ONLY network seam, using openai.AsyncOpenAI(base_url=base_url or 'https://openrouter.ai/api/v1') with extra_body reasoning effort; async def complete(self, system, user, effort='low') -> str -- calls self._chat up to 3 total attempts, sleeping between attempts via await self._sleep(min(2 ** attempt, 8)); async def _sleep(self, seconds) -> None (default asyncio.sleep); after final failure raise LLMError; async def complete_json(self, system, user, model_cls, effort='low') -> model_cls -- extract the first balanced JSON object from the text and model_validate it, raising LLMError on unparseable output or validation errors. Client instantiation must be lazy (created on first use) so importing the module never requires openai config.",
+      "target_files": [
+        "src/agents/llm.py"
+      ],
+      "dependencies": [
+        "TASK-7005A"
+      ],
+      "priority": "high",
+      "acceptance_criteria": [
+        "tests/test_llm.py collected and fully green",
+        "exactly 3 total attempts then LLMError",
+        "wrapped JSON parsed; schema violations raise LLMError"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_LLM_TIERED_ROUTING",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-09-01T21:59:32Z"
+    },
+    {
+      "id": "TASK-7006",
+      "title": "Specialist analysts (parallel, information-isolated)",
+      "objective": "Tests-first: implement src/agents/analysts.py so tests/test_analysts.py passes. Exact API: async def run_analysts(ticker: str, inputs: dict, client) -> dict[str, AnalystReport]. inputs keys: 'fundamentals' (dict), 'prices' (pd.Series), 'news' (list[dict]), 'macro' (dict). Launch four analyses concurrently via asyncio.gather -- fundamental (sees only inputs['fundamentals']), technical (only inputs['prices']), sentiment (only inputs['news']), macro (only inputs['macro']) -- each calling client.complete_json(system, user, AnalystReport, effort='low'). Prompts must instruct evidence-gated citations. The fundamental prompt must contain the serialized fundamentals and must NOT contain news or macro data (information isolation).",
+      "target_files": [
+        "src/agents/analysts.py"
+      ],
+      "dependencies": [
+        "TASK-7002",
+        "TASK-7003B",
+        "TASK-7004A",
+        "TASK-7004B",
+        "TASK-7005B"
+      ],
+      "priority": "high",
+      "acceptance_criteria": [
+        "tests/test_analysts.py collected and fully green",
+        "four reports returned with citations",
+        "prompts prove isolation"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_ANALYST_REPORT",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-09-02T00:38:51Z"
+    },
+    {
+      "id": "TASK-7007A",
+      "title": "Bull/Bear research debate",
+      "objective": "Tests-first: implement src/agents/debate.py so tests/test_debate.py passes. Exact API: async def run_debate(ticker: str, reports: dict[str, AnalystReport], client) -> DebateRecord. Build one prompt containing every report's agent name and thesis plus explicit instructions to argue bull and bear perspectives citing the reports' citations, then client.complete_json(system, user, DebateRecord, effort='low'). Prompt + import contract (pinned by tests/test_debate.py -- satisfy EXACTLY): (1) Module imports: ONLY `from src.agents.models import AnalystReport, DebateRecord` plus stdlib (asyncio/typing). Do NOT import src.agents.llm, src.broker.*, any third-party package, and do NOT create helper modules -- an import error at module import time makes tests/test_debate.py fail COLLECTION, which counts as a suite failure and blocks the gate. (2) Build ONE user prompt that contains, for EVERY report in the dict: the report's agent name AND its thesis text verbatim (e.g. the string 'fundamental thesis' must appear), plus the word 'bull' and the word 'bear' (instructions to argue both sides), plus the ticker string. (3) Call `await client.complete_json(system, user, DebateRecord, effort='low')` and return the resulting DebateRecord unchanged -- the client is any object exposing complete_json(system, user, model_cls, effort='low'); never construct an LLM client yourself.",
+      "target_files": [
+        "src/agents/debate.py"
+      ],
+      "dependencies": [
+        "TASK-7006"
+      ],
+      "priority": "high",
+      "acceptance_criteria": [
+        "tests/test_debate.py collected and fully green",
+        "prompt carries all theses + ticker"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_DEBATE_LOOP",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-09-02T18:30:05Z"
+    },
+    {
+      "id": "TASK-7007B",
+      "title": "Risk Manager deterministic veto gate",
+      "objective": "Tests-first: implement src/agents/risk_manager.py so tests/test_risk_manager.py passes. Exact API: def evaluate_risk(ticker: str, reports: dict[str, AnalystReport], debate: DebateRecord, quant: dict, account: dict, proposed_position_pct: float | None = None) -> RiskDecision. DETERMINISTIC rules in this order: (1) any report or the debate with empty citations -> veto reason 'missing citations: <agent/name>'; (2) quant['signal'] == 'SELL' and quant['confidence'] > 0.80 -> quant_override=True, approved=False, veto reason 'quant override: SELL confidence <x> (z-score <z>)'; (3) proposed_position_pct is not None and > account.get('max_position_pct', 0.10) -> veto reason 'position size exceeds limit'; approved is True iff no veto reasons. No LLM calls at all. Import contract (pinned by tests/test_risk_manager.py): import ONLY `from src.agents.models import AnalystReport, DebateRecord, RiskDecision` plus stdlib (typing); there is NO src.agents.report or src.broker.models module and src.agents.llm must not be imported -- a wrong import makes the test file fail COLLECTION, which the gate counts as a failure. Empty-citation contract: citations may arrive as an empty list on objects built without validation; check `if not report.citations` per report (reason must mention the report's `agent` field and the word citations) and `if not debate.citations` (reason mentions debate). Never index citations[0] without an emptiness check first.",
+      "target_files": [
+        "src/agents/risk_manager.py"
+      ],
+      "dependencies": [
+        "TASK-7007A"
+      ],
+      "priority": "high",
+      "acceptance_criteria": [
+        "tests/test_risk_manager.py collected and fully green",
+        "quant override + citation gate + size limit all enforced deterministically"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 2,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_RISK_VETO_GATE",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-09-04T01:03:48Z"
+    },
+    {
+      "id": "TASK-7008",
+      "title": "Portfolio Manager: sizing, batching, PDT",
+      "objective": "Tests-first: implement src/agents/portfolio_manager.py so tests/test_portfolio_manager.py passes. Exact API: def build_order_plan(decisions: list[RiskDecision], signals: dict[str, dict], account: dict, day_trade_dates: list[str], as_of: str) -> list[OrderPlan]. signals values carry {'signal', 'confidence', 'reference_price'}. Rules: consider only decisions with approved=True whose signal is BUY or SELL; quantity = floor(equity * max_position_pct / reference_price), skip when < 1; side from the signal; limit_price = reference_price; rationale citing the quant z-score; cumulative notional (quantity * limit_price) must never exceed account['equity'] -- skip orders that would breach it; PDT rule: count day_trade_dates within the 5 business days ending as_of (inclusive, Mon-Fri only) -- when that count >= 3, emit NO sell orders (buys still allowed). Pure functions, no I/O. Import contract (pinned by tests/test_portfolio_manager.py): import ONLY `from src.agents.models import OrderPlan, RiskDecision` plus stdlib (math, datetime, typing) -- RiskDecision is defined in src.agents.models, NOT in src.agents.risk_manager; there is no src.agents.report or src.broker.models; do not import src.agents.risk_manager or src.agents.llm. A wrong import makes the test file fail COLLECTION, which the gate counts as a failure. Sizing source (pinned): max_position_pct comes from ACCOUNT (account['max_position_pct']), never from a decision attribute: quantity = floor(account['equity'] * account['max_position_pct'] / signals[ticker]['reference_price']); skip when quantity < 1; limit_price = reference_price; side = 'buy'/'sell' from the signal (lowercase); rationale must cite the quant z-score; PDT: count day_trade_dates within the 5 business days ending as_of (inclusive, Mon-Fri only) -- when that count >= 3 emit NO sell orders (buys still allowed); cumulative notional (quantity * limit_price) must never exceed account['equity'] -- skip orders that would breach it and continue with later tickers.",
+      "target_files": [
+        "src/agents/portfolio_manager.py"
+      ],
+      "dependencies": [
+        "TASK-7007B"
+      ],
+      "priority": "high",
+      "acceptance_criteria": [
+        "tests/test_portfolio_manager.py collected and fully green",
+        "PDT window math exact on fixed dates",
+        "capital cap respected"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_PORTFOLIO_SIZING",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-09-04T01:31:40Z"
+    },
+    {
+      "id": "TASK-7009",
+      "title": "Alpaca paper broker client",
+      "objective": "Tests-first: implement src/broker/alpaca.py so tests/test_broker.py passes. Exact API: PAPER_BASE_URL = 'https://paper-api.alpaca.markets'; class RateLimiter(max_per_minute: int = 200, clock=time.monotonic) with acquire() -> float returning 0.0 when a request is allowed or the seconds to wait when the rolling 60s window is full (keep a deque of clock timestamps); class AlpacaClient(key: str, secret: str, paper_only: bool = True) -- raise ValueError('live trading is disabled in this system version') when paper_only is False; attribute base_url = PAPER_BASE_URL; attribute rate_limiter = RateLimiter(); def _post(self, path: str, payload: dict) -> dict and def _get(self, path: str) -> list -- transport seams raising NotImplementedError by default (tests monkeypatch them); def submit_limit_orders(self, orders: list[OrderPlan]) -> list[dict] -- OrderPlan is defined in src/agents/models.py (TASK-7005A): import it as \from src.agents.models import OrderPlan -- there is no src.broker.models module. Validate every item is an OrderPlan instance else ValueError, then for each order call self._post('/v2/orders', {'symbol': ticker, 'qty': str(quantity), 'side': side, 'type': 'limit', 'time_in_force': 'day', 'limit_price': str(limit_price)}) and collect responses; def get_positions(self) -> list via self._get('/v2/positions'). Use httpx for the real transport inside _post/_get (headers with key/secret), constructed lazily.",
+      "target_files": [
+        "src/broker/alpaca.py"
+      ],
+      "dependencies": [
+        "TASK-7005A"
+      ],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "tests/test_broker.py collected and fully green",
+        "paper hard-lock verified",
+        "rate limiter deterministic with injected clock",
+        "only limit orders leave the system"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_BROKER_EXECUTION",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-09-02T00:46:38Z"
+    },
+    {
+      "id": "TASK-7010A",
+      "title": "Pipeline state + SQLite decision store",
+      "objective": "Tests-first: implement src/pipeline/state.py and src/store/decisions.py so tests/test_decisions.py passes. state.py: from typing import TypedDict; class PipelineState(TypedDict) with keys tickers (list[str]), reports (list), debates (list), decisions (list), orders (list), as_of (str | None); def new_state(tickers: list[str]) -> PipelineState returning empty lists. decisions.py: class DecisionStore(db_path: pathlib.Path) using sqlite3 standard library -- table decisions(id INTEGER PRIMARY KEY AUTOINCREMENT, payload TEXT NOT NULL); def log_decision(self, decision: dict) -> None (json.dumps the whole dict into payload); def tail(self, n: int) -> list[dict] returning the last n rows oldest-first with payload json-decoded; def count(self) -> int. No update/delete methods.",
+      "target_files": [
+        "src/pipeline/state.py",
+        "src/store/decisions.py"
+      ],
+      "dependencies": [
+        "TASK-7007B",
+        "TASK-7008",
+        "TASK-7009"
+      ],
+      "priority": "high",
+      "acceptance_criteria": [
+        "tests/test_decisions.py collected and fully green",
+        "store round-trips dicts and is append-only"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_DECISION_STORE",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-09-04T01:34:06Z"
+    },
+    {
+      "id": "TASK-7010B",
+      "title": "Pipeline DAG wiring",
+      "objective": "Tests-first: implement src/pipeline/graph.py so tests/test_pipeline.py passes. Exact API: async def run_pipeline(tickers: list[str], components: dict, as_of: str | None = None) -> list[dict]. components keys and contracts: fetch_ohlcv(ticker, period='6mo') -> pd.Series; fetch_fundamentals(ticker) -> dict; fetch_news(ticker) -> list; generate_signal(prices) -> dict (add 'reference_price' = float(prices.iloc[-1])); run_analysts(ticker, inputs, client=components['client']) -> dict; run_debate(ticker, reports, client=...) -> DebateRecord; evaluate_risk(ticker, reports, debate, quant, account, proposed_position_pct=None) -> RiskDecision; build_order_plan(decisions, signals, account, day_trade_dates, as_of=as_of) -> list[OrderPlan]; broker_submit(orders) -> list; plus 'account' (dict), 'day_trade_dates' (list[str]), 'client'. Flow per ticker (concurrently across tickers via asyncio.gather): fetch data -> quant signal -> analysts -> debate -> evaluate_risk; then ONCE for the whole batch: build_order_plan then broker_submit. Return one decision dict per ticker: {'ticker', 'quant', 'reports', 'veto' (RiskDecision.model_dump()), 'orders': []}. Build a PipelineState via new_state and populate it. No I/O beyond the injected components.",
+      "target_files": [
+        "src/pipeline/graph.py"
+      ],
+      "dependencies": [
+        "TASK-7010A"
+      ],
+      "priority": "high",
+      "acceptance_criteria": [
+        "tests/test_pipeline.py collected and fully green",
+        "ingestion precedes analysis (call-order assert)",
+        "broker submitted exactly once"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 2,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_PIPELINE_DAG",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-09-04T02:59:15Z"
+    },
+    {
+      "id": "TASK-7011",
+      "title": "Config: reset_settings_cache compatibility hook",
+      "objective": "Add a compatibility hook to src/config.py so tests/test_cli.py can import it. CRITICAL: src/config.py EXISTS and is pinned by tests/test_config.py -- reproduce its ENTIRE current content EXACTLY (Settings, get_settings(), SETTINGS, DEFAULT_WATCHLIST, DEFAULT_TIER_MODEL_MAP, all env parsing unchanged) and make exactly ONE addition: append at the end of the file:\n\ndef reset_settings_cache() -> None:\n    \"\"\"Compatibility hook: clear any module-level settings cache.\n\n    get_settings() constructs a fresh Settings() per call, so there is\n    nothing to clear; this hook exists so cache-based implementations\n    can be swapped in later without changing call sites.\n    \"\"\"\n    return None\n\nDo NOT introduce caching in get_settings(); do NOT reassign SETTINGS; do NOT remove or reorder anything. The whole pytest suite (tests/test_config.py included) must stay green.",
+      "target_files": [
+        "src/config.py"
+      ],
+      "dependencies": [
+        "TASK-7010B"
+      ],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "tests/test_cli.py collected and fully green",
+        "paper-run fails closed without keys",
+        "scan prints decision rows"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_CONFIG_HOOK",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": false,
+      "completed_at": "2026-09-04T18:43:37Z",
+      "failed_at": null,
+      "auto_requeues": 0
+    },
+    {
+      "id": "TASK-7011B",
+      "title": "Typer CLI (scan/decisions/show-config/paper-run)",
+      "objective": "Tests-first: implement src/cli.py so tests/test_cli.py passes. tests/test_config.py must stay green (src/config.py already exposes reset_settings_cache from TASK-7011; do not modify it). Exact API: import typer; app = typer.Typer(); re-export at module level with a plain 'from src.pipeline.graph import run_pipeline' (tests monkeypatch src.cli.run_pipeline, so commands must reference this module-level name inside the command BODY at call time -- never bind it to a default argument at import time, never a try/except fallback import, never None components). module-level def _components() -> dict building the pipeline components from the project src modules (must never raise; minimal wiring acceptable, TASK-7012 completes it). module-level def _store() -> DecisionStore with db_path=Path(os.environ.get('DECISIONS_DB', 'data/decisions.sqlite3')); call _store() inside command bodies (tests monkeypatch cli._store after import). Commands registered on app: scan, paper-run, decisions, show-config. scan -- option --tickers (comma-separated str, default None -> get_settings().watchlist; tickers = [t.strip() for t in value.split(',') if t.strip()]); calls asyncio.run(run_pipeline(tickers, _components())); then prints ONE line per decision dict using ONLY .get() chains so missing keys can never raise: ticker, quant signal, quant confidence, veto approved (e.g. 'FAKE1 HOLD 0.5 approved=False'). Decision dicts look like {\"ticker\": \"FAKE1\", \"quant\": {\"signal\": \"HOLD\", \"confidence\": 0.5, \"z_score\": 0.1}, \"veto\": {\"approved\": False, \"veto_reasons\": []}, \"reports\": {}, \"orders\": []} -- the test monkeypatches run_pipeline to return exactly this shape and asserts exit_code == 0 and FAKE1 and HOLD appear in stdout. paper-run -- if not (get_settings().alpaca_api_key and get_settings().alpaca_secret_key): print an error line and raise typer.Exit(code=1) (test deletes both env keys and asserts exit_code != 0). decisions -- rows = _store().tail(20); print one line per row including row.get('ticker') (test logs a decision with ticker AAPL and asserts AAPL in stdout; DecisionStore API: log_decision(dict), tail(n) -> list[dict], count()). show-config -- print every ticker in get_settings().watchlist and the paper_only flag (test sets WATCHLIST=AAA,BBB, calls reset_settings_cache(), asserts AAA and BBB in stdout; get_settings() is fresh-per-call so it re-reads env). Zero network anywhere; no I/O beyond the _store/_components seams.",
+      "target_files": [
+        "src/cli.py"
+      ],
+      "dependencies": [
+        "TASK-7011"
+      ],
+      "priority": "high",
+      "acceptance_criteria": [
+        "tests/test_cli.py collected and fully green",
+        "scan prints decision rows and never raises on missing keys",
+        "paper-run fails closed without keys",
+        "entire pytest suite green (tests/test_config.py included)"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_CLI_WIRING",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-09-04T19:02:40Z"
+    },
+    {
+      "id": "TASK-7012",
+      "title": "End-to-end paper smoke runner",
+      "objective": "Tests-first: implement src/pipeline/smoke.py so tests/test_smoke.py passes. Exact API: class MissingCredentialsError(Exception); async def run_smoke(tickers: list[str], dry_run: bool = True, components: dict | None = None) -> dict. When components is None, build real components (reuse graph contracts; real LLM client; broker: if dry_run -> broker_submit records and returns [] without touching Alpaca; if not dry_run -> require get_settings().alpaca_api_key and alpaca_secret_key else raise MissingCredentialsError). Return summary dict {'dry_run': bool, 'orders_submitted': int, 'tickers': tickers}. Every run logs decisions via DecisionStore at the DECISIONS_DB env path (default 'data/decisions.sqlite3'). The suite only exercises offline stubbed components; document the manual live paper run in README. CONTRACT WITH tests/test_smoke.py (pinned -- obey exactly): the test injects components containing ONLY these keys: fetch_ohlcv, fetch_fundamentals, fetch_news, generate_signal, run_analysts, run_debate, evaluate_risk, build_order_plan, broker_submit, account, day_trade_dates, client. There is NO 'pipeline_runner' key -- do not invent component keys; run_smoke drives the per-ticker flow ITSELF using the injected callables: prices = components['fetch_ohlcv'](tk); quant = components['generate_signal'](prices); reports = components['run_analysts'](tk, inputs, client=components.get('client')); debate = components['run_debate'](tk, reports, client=components.get('client')); veto = components['evaluate_risk'](tk, reports, debate, quant, components['account'], None); orders = components['build_order_plan'](...). Stub results may be None or {} (evaluate_risk/run_debate return None, run_analysts returns {}) -- tolerate with defaults, never KeyError. Use components['account'] and components['day_trade_dates'] for build_order_plan. Import the store with a plain 'from src.store.decisions import DecisionStore' -- NO try/except ImportError fallback. Construct DecisionStore(db_path=Path(os.environ.get('DECISIONS_DB', 'data/decisions.sqlite3'))) per run and call log_decision(...) per ticker IN DRY-RUN TOO (test_dry_run_writes_decision_log asserts the sqlite file exists after a dry run). dry_run=True must NEVER call components['broker_submit'] (test asserts submitted == [] and summary['orders_submitted'] == 0). The credentials check for dry_run=False reads ALPACA_API_KEY and ALPACA_SECRET_KEY from os.environ and raises MissingCredentialsError BEFORE any other work (test deletes both keys and expects the typed error).",
+      "target_files": [
+        "src/pipeline/smoke.py"
+      ],
+      "dependencies": [
+        "TASK-7011B"
+      ],
+      "priority": "low",
+      "acceptance_criteria": [
+        "tests/test_smoke.py collected and fully green",
+        "dry_run submits nothing and writes the decision log",
+        "missing keys raise MissingCredentialsError on live path"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 2,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_E2E_PAPER_SMOKE",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-09-04T20:26:22Z",
+      "failed_at": null,
+      "auto_requeues": 1
+    },
+    {
+      "id": "TASK-7013A",
+      "title": "CLI real components + decision audit (src/cli.py only)",
+      "objective": "Tests-first: implement the real component wiring in src/cli.py ONLY so its tests in tests/test_wiring.py pass (the three smoke-delegation tests there self-skip until TASK-7013B). Exactly one target file; do not touch any other module. ADDITIONS to src/cli.py:\n(a) def _jsonable(obj): recursively convert pydantic models via model_dump(), recurse dicts/lists/tuples, pass through None/str/int/float/bool, fall back to str(obj) otherwise.\n(b) def _components(submit: bool = False, cache=None) -> dict -- NEVER raises; returns ALL 12 keys of the run_pipeline contract. EXACT import paths (they exist; inventing modules failed TASK-7012): from src.data.market_data import fetch_ohlcv; from src.data.fundamentals import fetch_fundamentals; from src.data.news import fetch_headlines; from src.quant.signals import generate_signal; from src.agents.analysts import run_analysts; from src.agents.debate import run_debate; from src.agents.risk_manager import evaluate_risk; from src.agents.portfolio_manager import build_order_plan; from src.agents.llm import LLMClient; from src.broker.alpaca import AlpacaClient. Components: 'client' = LLMClient(api_key=os.environ.get('OPENROUTER_API_KEY')) (lazy, import-safe, no network at construction); 'account' = {'equity': float(env ACCOUNT_EQUITY default '100000'), 'max_position_pct': float(env MAX_POSITION_PCT default '0.10')} with fallback to defaults on bad values; 'day_trade_dates' = [d.strip() for d in env DAY_TRADE_DATES.split(',') if d.strip()]; 'fetch_ohlcv' = closure(ticker, period='6mo') calling real fetch_ohlcv(ticker, period=period) then selecting the Close column as a pd.Series (if the selection is a DataFrame -- yfinance MultiIndex -- take its first column); 'fetch_fundamentals' / 'fetch_news' = closures calling fetch_fundamentals(ticker) / fetch_headlines(ticker, limit=10); 'generate_signal', 'run_analysts', 'run_debate', 'evaluate_risk', 'build_order_plan' = the real functions BY IDENTITY (no wrappers); 'broker_submit' = no-op returning [] unless (submit AND settings.alpaca_api_key AND settings.alpaca_secret_key), in which case closure(orders) -> AlpacaClient(key=..., secret=..., paper_only=True).submit_limit_orders(orders); any construction failure falls back to the no-op.\n(c) _run_and_print(tickers, submit: bool = False): scan calls it with submit False; paper-run calls _run_and_print(tickers, submit=True) AFTER its existing fail-closed key check. After printing each decision line, persist: store.log_decision(_jsonable(decision)) for every decision, wrapped so any store failure prints ONE warning line and never aborts.\nPRESERVE EXACTLY (each of these was broken by a previous attempt and is pinned by tests): (1) _run_and_print handles the pipeline result CONDITIONALLY: 'if inspect.isawaitable(result): result = asyncio.run(result)' -- NEVER asyncio.run unconditionally (tests monkeypatch src.cli.run_pipeline to return a plain list; asyncio.run(list) raises ValueError 'a coroutine was expected'); (2) all four commands stay registered via @app.command(...) with names exactly 'scan', 'paper-run', 'decisions', 'show-config' and their current --tickers options (tests/test_cli.py::test_app_has_expected_commands); (3) the plain module-level re-export 'from src.pipeline.graph import run_pipeline' stays, and command bodies reference the module-level name at call time (tests monkeypatch src.cli.run_pipeline); (4) _store() keeps the DECISIONS_DB env path default 'data/decisions.sqlite3'; (5) _print_decision keeps its .get()-chain, never-raise shape.",
+      "target_files": [
+        "src/cli.py"
+      ],
+      "acceptance_criteria": [
+        "tests/test_wiring.py: all 5 component tests + both scan-decision tests pass",
+        "tests/test_wiring.py smoke-delegation tests remain skipped (TASK-7013B pending)",
+        "tests/test_cli.py fully green (4 commands registered, monkeypatched run_pipeline path intact)",
+        "entire pytest suite green with zero failures",
+        "no network access anywhere in the suite"
+      ],
+      "dependencies": [],
+      "priority": "high",
+      "workspace_patterns_referenced": [],
+      "retry_count": 2,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_PIPELINE_WIRING",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-09-04T23:47:29Z",
+      "failed_at": null,
+      "auto_requeues": 0
+    },
+    {
+      "id": "TASK-7013B",
+      "title": "Smoke delegation to run_pipeline + audit (src/pipeline/smoke.py only)",
+      "objective": "Tests-first: rewire src/pipeline/smoke.py ONLY so the three smoke-delegation tests in tests/test_wiring.py activate and pass (they currently self-skip). Depends on TASK-7013A (cli._components real). Exactly one target file. CHANGES to src/pipeline/smoke.py:\n(a) _build_real_components MUST REMAIN 'async def _build_real_components(dry_run: bool) -> dict' (tests call asyncio.run(smoke._build_real_components(dry_run=True)); a plain def raises ValueError 'a coroutine was expected' -- this failed two cycles). Body is ONE effective line using the import 'from src.cli import _components as build_cli_components, _jsonable': 'return dict(build_cli_components(submit=not dry_run))'. The five hallucinated imports (src.data.ohlcv, src.quant.signal, src.agents.graph, src.agents.order_builder, src.risk.veto) are deleted -- none exist.\n(b) run_smoke(tickers, dry_run=True, components=None) keeps its signature and its MISSING-CREDENTIALS-FIRST rule: on the live path the env check runs before anything else (before the components-None branch, even when components are injected): if not dry_run and not (env ALPACA_API_KEY and env ALPACA_SECRET_KEY) raise MissingCredentialsError (tests/test_smoke.py pins this).\n(c) When components is None: 'components = await _build_real_components(dry_run=dry_run)'. Then DELEGATE the whole flow to the pipeline (delete the legacy per-ticker loop): wrap broker_submit for counting WITHOUT mutating the caller's dict: copy = dict(components); original = copy['broker_submit']; async def broker_submit_recording(orders): result = original(orders); if inspect.isawaitable(result): result = await result; submitted.extend(result or []); return result; copy['broker_submit'] = broker_submit_recording; decisions = await run_pipeline(list(tickers), copy) with 'from src.pipeline.graph import run_pipeline' at module top (plain import).\n(d) AUDIT (context.md hard rule 6): store = DecisionStore(db_path=Path(os.environ.get('DECISIONS_DB', 'data/decisions.sqlite3'))) with plain 'from src.store.decisions import DecisionStore'; for each decision in decisions: if decision is not None: store.log_decision(_jsonable(decision)).\n(e) Return {'dry_run': dry_run, 'orders_submitted': len(submitted), 'tickers': list(tickers)}. Keep the module docstring's manual-run instructions accurate. The injected-components path (tests/test_smoke.py stubs) must flow through run_pipeline unchanged: the stub callables already match the graph call shapes and graph's _maybe_await tolerates sync callables.",
+      "target_files": [
+        "src/pipeline/smoke.py"
+      ],
+      "dependencies": [],
+      "acceptance_criteria": [
+        "tests/test_wiring.py fully green with ZERO skips (smoke-delegation tests activate)",
+        "tests/test_smoke.py fully green (injected-components path unchanged)",
+        "entire pytest suite green",
+        "no network access anywhere in the suite"
+      ],
+      "priority": "high",
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_PIPELINE_WIRING",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-09-05T00:56:35Z",
+      "failed_at": null,
+      "auto_requeues": 0
+    }
+  ]
+}

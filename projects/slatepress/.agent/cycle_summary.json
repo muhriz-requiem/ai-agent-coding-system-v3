@@ -1,0 +1,10 @@
+{
+  "task_id": "T-006",
+  "attempts": 3,
+  "verdict": "APPROVED",
+  "model_used": "builder_escalate",
+  "duration_s": 129.48,
+  "escalated": false,
+  "reason": null,
+  "files_applied": 1
+}

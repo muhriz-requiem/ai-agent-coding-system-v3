@@ -1,0 +1,292 @@
+=======================================================================
+ project_main — DAILY PAPER-TRADING RUNBOOK
+ (local PC era — replace this file when the pipeline moves to cloud)
+=======================================================================
+
+THE ONE FACT THAT MATTERS
+-------------------------
+scan / paper-run / backtest / regime-sweep are one-shot: they run for a
+few minutes, write their output + audit log, then exit.  Your PC is
+only "active" while a command runs.  TWO COMMANDS ARE LONG-RUNNING:
+`session` (intraday cycles until close) and `overnight` (sleeps until
+the close-entry window, then until next morning's exit) — they keep a
+terminal open by design, are Ctrl+C-safe at any moment, and persist
+every action to SQLite so a crash or restart never loses state.
+
+
+ONE-TIME SETUP (already done on this machine)
+---------------------------------------------
+1. pip install -r requirements.txt
+2. .env in this project folder contains:
+      OPENROUTER_API_KEY   (required — analysts + debate)
+      ALPACA_API_KEY / ALPACA_SECRET_KEY  (PAPER keys, app.alpaca.markets)
+      PAPER_ONLY=true      (hard-locked — the broker refuses live trading)
+      EDGAR_IDENTITY       (optional — "Name email", enables insider data)
+      SECURITIESDB_API_KEY / FINRA_API_KEY  (optional — 13F / dark pool)
+   Everything else: defaults are fine (see README.md / .env.example).
+3. .env is loaded automatically at startup (python-dotenv). You never
+   need to `set` variables manually; real shell env vars still win.
+
+Note: Mon 2026-09-07 is Labor Day — US market closed. First session for
+this routine is Tuesday 2026-09-08, 09:30 ET.
+
+
+MORNING ROUTINE (market-open days, shortly after 09:30 ET)
+----------------------------------------------------------
+Step 0 — sanity (optional, seconds)
+    python -m src.cli show-config
+    -> confirm WATCHLIST, MAX_POSITION_PCT, PAPER_ONLY=true.
+
+Step 1 — analysis only, submits NOTHING (uses LLM credits, ~2-5 min)
+    python -m src.cli scan
+    -> one line per ticker:  TICKER ACTION confidence approved=True/False
+    -> fetches prices, regime, news, insider/13F/options data; every
+       decision is appended to data/decisions.sqlite3.
+    -> subset for a cheap day:  python -m src.cli scan --tickers AAPL,MSFT
+
+Step 2 — review (no LLM cost)
+    python -m src.cli decisions
+    -> last 20 audit records (full JSON per decision). Check:
+       regime:        "panic"    -> BUYs blocked (SELLs always pass)
+                      "risk_off" -> budgets scaled to 50% (REGIME_BUDGET_MULT)
+       veto_reasons:  non-empty  -> that ticker is blocked; trust it
+       reports.*.confidence: 0.0 + "unavailable" thesis = that analyst
+                      had no data this run (fail-open placeholder).
+
+Step 3 — submit paper orders (ONLY if Step 1/2 look sane)
+    python -m src.cli paper-run
+   -> re-runs analysis, then submits market/day orders to Alpaca PAPER
+      (BUYs as dollar notional, SELLs as fractional qty). Safety rails:
+      SELLs capped at held quantity, dust skipped (effective floor =
+      min(MIN_TRADE_NOTIONAL $10, max($1, equity x 1%)) -- accounts
+      under $1,000 scale down to the $1 Alpaca minimum), cumulative
+      BUY notional capped at equity, panic/risk_off gates applied.
+
+Step 4 — reconcile (any time later, ~1 min)
+    https://app.alpaca.markets  ->  Paper Trading  ->  Orders / Positions
+    -> confirms what actually landed. The SQLite audit log mirrors it.
+
+
+CONTINUOUS MODES (alternative to manual Steps 1-3)
+--------------------------------------------------
+session — intraday cycles until close (recommended daily driver):
+    python -m src.cli session --interval 30 --llm-refresh 120 --submit
+    -> sleeps until open (Alpaca clock), full LLM analysis at open and
+       every 2h, cheap quant-only cycles between (~$0.15/day LLM).
+       Orders only on NEW approved signals, capped 1 BUY + 1 SELL per
+       ticker/day, session BUY notional <= equity, no re-submission
+       while an open order exists. Ends itself at close; Ctrl+C ends
+       it anywhere, safely.
+    Test first:  python -m src.cli session --max-cycles 2 --no-wait
+    (analysis-only, no sleeping, --submit disabled).
+
+overnight — halo/drift cycle (validated by backtest --mode overnight):
+    evening:  python -m src.cli overnight --submit
+    -> waits until ~10 min before close, enters the top-5 approved BUYs
+       (OVERNIGHT_MAX_NAMES), sized with the BUY-side overnight Kelly
+       stats; keeps the terminal open overnight.
+    morning:  same command (just re-run it) -> mechanically sells every
+       open overnight entry at held quantity from 13:35 UTC (09:35 ET),
+       idempotent.  If the PC died overnight, re-running in the morning
+       still exits everything — state lives in the session store.
+    Test first:  python -m src.cli overnight --no-wait
+    (one analysis-only pass, --submit disabled).
+    NOTE: PC power settings matter — set Sleep=Never (or plug in) for
+    the overnight terminal.  Latest data (2y replay, 28-name expanded
+    watchlist, 2026-09-08): BUY-side overnight edge positive and now
+    PROMOTED to the primary Kelly stats (n=1161, kelly +0.082, Sharpe
+    0.74, usable=True — run `python -m src.cli backtest --mode overnight
+    --primary` to refresh); SELL-side not. The cycle trades BUYs only.
+    Multi-decade sweep cohort with the same edge: SPY / XLP / COST /
+    CRM / ADBE (Sharpe 0.6-0.95 over 25y).
+    LLM cost: +~$0.04/day (one full analysis at entry).
+
+Running session AND overnight on the same day is safe: the per-day BUY
+budget is enforced both ways (session sees overnight entries, overnight
+skips tickers session already bought) — no ticker is ever bought twice.
+
+Safe pull-back from either mode: Ctrl+C (see section below) — orders
+already submitted stay live; unwind via Alpaca paper UI as in C.
+
+
+PAIRS MODE (optional, opt-in; long-only stat-arb on S&P 400 pairs)
+------------------------------------------------------------------
+One-time: requirements.txt already pins statsmodels + lxml; the first
+`pairs-discover` scrapes the S&P 400 universe from Wikipedia (cached 7
+days) and fetches 2y of daily bars per name (disk-cached 1 day) — slow
+on purpose, run it over coffee.
+
+Validation before enabling (Phase 4 ship gate):
+    python -m src.cli pairs-backtest
+    -> walk-forward replay over the universe; writes
+       data/pairs_backtest_stats.json. Ship gate: aggregate Sharpe > 1
+       and positive Kelly. Below that, leave PAIR_KELLY_MAX_MULT=1.0
+       (or PAIR_KELLY_ENABLED=0) — the 0.5 cap is a ceiling, not a promise.
+
+Forming the book (monthly cadence — PAIR_REBALANCE_DAYS=21):
+    python -m src.cli pairs-discover
+    -> forms data/pairs_active.json (formation stats survive restarts;
+       z-scores never re-fit between formations). Re-run with --force
+       to re-form early. Signals DO NOT need daily discovery: paper-run
+       re-forms automatically when the book is stale.
+
+Trading (adds pair legs to the normal batch):
+    python -m src.cli scan --with-pairs      (analysis only, no orders)
+    python -m src.cli paper-run --with-pairs (submits pair-leg orders too)
+    python -m src.cli pairs-scan             (pairs-only analysis, free)
+
+What to expect in the output:
+    PAIR A/B z=+2.31 approved=True
+    BUY <cheap leg>  ... pair A/B leg (spread z 2.31; budget ...)
+    -> long-only: only the CHEAP leg gets a BUY; the expensive leg emits
+       SELL_EXIT which is capped at held quantity (never a short) and
+       skipped when unheld. Exits are mechanical full-quantity at
+       |z| < 0.5 (reversion) or |z| > 3.5 (stop). Every pair decision is
+       logged with kind="pair" in the audit log (see `decisions`).
+
+Safety rails (on top of every single-leg rail):
+    * pair BUYs share the equity / sector / cluster caps with single-leg
+      BUYs, plus per-pair 3% (both legs) and total 30% rails
+    * when the equity cap binds, pair legs are skipped FIRST
+    * vetoes (correlation breakdown, half-life drift, liquidity drop)
+      block BUY legs; SELL_EXIT always passes
+    * a missing/stale book -> no pair trades, single-leg unaffected
+    * PAIR_KELLY_* reads a SEPARATE stats file — pairs experiments can
+      never move intraday/overnight sizing
+
+NOTE: pairs positions are plain long positions in the pair's tickers —
+reconcile and unwind them exactly like any other position (Step 4 / C).
+
+
+SAFE PULL-BACK / SHUTDOWN
+-------------------------
+A. You changed your mind before submitting:
+      Do nothing. Close the terminal. Nothing runs, nothing persists.
+
+B. Ctrl+C mid-command:
+   Safe everywhere. One-shot commands (scan/paper-run) submit exactly
+   once, at the very end of the batch — Ctrl+C before that means
+   nothing was sent. session/overnight persist every submitted action
+   to SQLite the moment it happens, so a Ctrl+C or crash only ever
+   leaves orders that are already live on Alpaca (unwind via C) and
+   budgets/entries stay consistent. The audit log is append-only; a
+   partial run leaves nothing that breaks the next run.
+
+C. Unwind after a paper-run:
+      1) app.alpaca.markets -> Paper Trading -> Orders -> cancel open
+      2) -> Positions -> close positions (paper money, zero real risk)
+      API equivalent: DELETE https://paper-api.alpaca.markets/v2/orders
+
+D. Pause the whole system (days/weeks):
+      Just don't run paper-run. `scan` stays safe (analysis only).
+      Optional belt-and-braces: set  MIN_TRADE_NOTIONAL=1000000  in .env
+      -> every order is skipped as dust even if paper-run is invoked by
+      accident (an absolute floor above the default always wins over the
+      equity-relative scaling). Delete the line to resume normal sizing.
+
+E. Per-layer kill switches in .env (each degrades fail-open, no restart
+   needed — just edit and re-run):
+      KELLY_ENABLED=0            ignore backtest stats in sizing
+      PAIR_KELLY_ENABLED=0       ignore pairs backtest stats in pair sizing
+      PAIRS_ENABLED=0            pairs module off (pipeline pairs-free)
+      REGIME_ENABLED=0           skip regime fetch (gates go neutral)
+      INSIDER_ENABLED=0          skip Form 4/144 fetch + analyst
+      INSTITUTIONAL_ENABLED=0    skip 13F fetch + analyst
+      OPTIONS_FLOW_ENABLED=0     skip unusual-options scan + analyst
+      COST_BUFFER_PCT=0.01       (optional) shave 1% off every budget
+      VOLUME_Z_MIN_BUY=          (unset) disable the volume-confirmation
+      FEAR_Z_MAX_BUY=            BUY gates — delete/unset the line to
+      BREADTH_GOLD_EQ_MIN_BUY=   turn that gate off (all fail-open)
+
+
+SESSION POLICY OPTIONS — design record (session loop is planned Phase 2;
+not yet built — implemented options become CLI flags/env vars)
+-----------------------------------------------------------------------
+Cadence changes ANALYSIS COST only. The safety architecture is identical
+under every option: 1 BUY + 1 SELL per ticker per day, no re-submission
+while an open order exists, session-wide BUY notional capped at equity,
+panic/risk_off gates re-checked every cycle, Ctrl+C safe (state persists
+per action in SQLite).
+
+OPTION A — FULL CYCLES ON TIMER
+  What:    every cycle (~30m) runs the complete pipeline: all 7 analysts
+           + debate + risk + planner, then orders.
+  LLM:     ~80 calls per cycle x ~13 cycles = 1,000+ calls/day.
+  Code:    simplest — the loop body is exactly today's `paper-run`.
+  Pros:    zero new analysis logic; freshest possible analyst views.
+  Cons:    ~10x the LLM cost of the alternatives; ~90% of cycles produce
+           near-identical reports (fundamentals/news/insider/13F barely
+           move intraday) and the same signals re-fire every cycle.
+  Verdict: safe but wasteful; right choice only if LLM cost is irrelevant.
+
+OPTION B — EVENT-DRIVEN + DAILY BUDGET
+  What:    full LLM analysis ONCE shortly after open. Between cycles:
+           cheap quant-only re-checks (fresh prices -> quant -> risk ->
+           planner) reusing the morning's stored analyst reports, so
+           sizing stays faithful. Orders only when a NEW approved signal
+           appears for a ticker that hasn't acted today.
+  LLM:     ~80-160 calls/day.
+  Code:    needs a cheap-cycle path (report reuse injection).
+  Pros:    cheapest; quant still catches intraday triggers (today's
+           growing bar shifts z-score/momentum).
+  Cons:    analyst/debate views go stale by midday (sentiment, macro
+           regime shifts not re-assessed until next day).
+  Verdict: most efficient; slightly blind to intraday narrative changes.
+
+OPTION C — HYBRID: FULL LLM REFRESH EVERY 2H   << CHOSEN >>
+  What:    full LLM analysis at open AND every SESSION_LLM_REFRESH
+           (default 2h -> ~4 full analyses per 6.5h session). Cheap
+           quant-only cycles every SESSION_INTERVAL (default 30m)
+           between refreshes. Orders only on new approved signals,
+           within the shared budgets.
+  LLM:     ~240-320 calls/day (4 full analyses x ~80 calls).
+  Code:    same machinery as B plus a refresh timer.
+  Pros:    analyst/debate views re-assessed 2-3 times intraday (catches
+           regime/sentiment shifts) at ~1/3 of Option A's cost; cheap
+           cycles keep order timing responsive between refreshes.
+  Cons:    most moving parts of the three (timer + refresh + report
+           reuse); still ~3-4x Option B's cost.
+  Verdict: chosen as the best freshness-per-dollar middle ground.
+
+TUNING AFTER LIVE USE:
+  Cost too high?  raise SESSION_LLM_REFRESH to 4h (approx 160 calls/day)
+                  or switch to Option B.
+  Feels stale?    lower SESSION_LLM_REFRESH to 1h (approx 480 calls/day)
+                  or run Option A for one day and compare decisions.
+  The two knobs are independent: interval = order-timing responsiveness
+  (cheap cycles), refresh = analyst freshness (expensive cycles).
+
+RELATED AXIS — START MODE (also decided): AUTO SLEEP/WAKE chosen. The
+session loop queries Alpaca /v2/clock: market closed -> prints next_open
+and sleeps in short chunks (Ctrl+C responsive); open -> cycles until
+next_close, then exits. Alternative rejected: manual start each morning
+(same loop, but refuses to wait — you would have to remember to launch
+it at 09:30; defeats the "own consistency" problem).
+
+
+NOTES
+-----
+* Kelly sizing: data/backtest_stats.json now holds the PROMOTED
+  overnight BUY-side edge (2y replay, 28-name watchlist, 2026-09-08:
+  n=1161, kelly +0.082, usable=True) -> the Kelly multiplier is active
+  (bounded by KELLY_MAX_MULT=1.5x and the hard per-name cap). To go
+  back to a neutral multiplier: KELLY_ENABLED=0 in .env, or re-run
+  `python -m src.cli backtest` (close mode) without --primary — a
+  non-positive aggregate writes usable=False and sizing stays 1.0.
+* Pairs sizing (opt-in --with-pairs): PAIR_KELLY_* reads its own file
+  (data/pairs_backtest_stats.json from `pairs-backtest`); the active
+  book is data/pairs_active.json (delete it to trade no pairs until
+  the next `pairs-discover`). Until the Phase 4 walk-forward gate
+  (aggregate Sharpe > 1) passes, keep the pairs Kelly multiplier
+  neutral: PAIR_KELLY_MAX_MULT=1.0 in .env.
+* Backtest tooling: `python -m src.cli backtest-sweep` runs the full
+  mode x period x horizon grid (Sharpe/Sortino/Calmar/Omega per combo)
+  into data/backtest_sweep.json; `python -m src.cli regime-sweep`
+  reports regime-threshold fire rates. Both are diagnostic-only.
+* Markets closed (weekends/holidays): scan works but signals are stale
+  — skip paper-run.
+* LLM cost per full run: 7 analysts + 1 debate per ticker (~8 calls x
+  watchlist size). `--tickers` shrinks it.
+* Tests: python -m pytest tests/ -q   (610 passing as of 2026-09-13,
+  includes the pairs module)
+* Full reference: README.md (architecture, Configuration table, Safety)

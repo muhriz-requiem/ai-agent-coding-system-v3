@@ -1,0 +1,117 @@
+{
+  "tasks": [
+    {
+      "id": "T-DATALOADER",
+      "title": "Data loading and manifest reading",
+      "objective": "Implement data loading in src/boardscan.py: load_projects(root: str, project: str | None = None) -> list[tuple[str, object]]. Iterate <root>/projects/* (directories only, sorted ascending by directory name); skip a project entirely when its .agent/task_board.json is missing; return (name, parsed-board-dict) for readable boards and (name, exception) for unreadable ones (capture JSONDecodeError/OSError -- invalid JSON is data, never a mid-scan abort). If root is not an existing directory, raise SystemExit(2). If project is given and <root>/projects/<project> is not a directory, print 'no such project: <project>' to stderr and raise SystemExit(2); otherwise filter the result to that project. No network; stdlib only.",
+      "target_files": [
+        "src/boardscan.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "tests/test_loader.py is collected and green",
+        "invalid JSON becomes an (name, exception) tuple, scan continues",
+        "missing root / unknown project raise SystemExit(2)"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_BOARDSCAN",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "authored_test_path": "tests/test_loader.py",
+      "completed_at": "2026-10-17T04:48:31Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-RENDERER",
+      "title": "Task rows and diagnosis parsing",
+      "objective": "Extend src/boardscan.py KEEPING the existing load_projects unchanged. Add format_task_row(task: dict) -> str rendering one task as columns [id, TITLE, STATUS, ATTEMPTS, DEPS] joined by ' | ': id and title have \n and \r replaced by spaces; STATUS is the task status verbatim when it is one of done|pending|failed else '?'; ATTEMPTS is str(task.get('retry_count', 0)); DEPS is ', '.join(dependencies) or '-' when empty/missing. Add parse_diagnosis(feedback: str | None) -> dict | None: only feedback that starts with 'DIAGNOSIS:' AND matches 'DIAGNOSIS: <cause> (confidence=<confidence>) remedy=<remedy>' returns {'cause': str, 'confidence': str, 'remedy': str} (confidence is the raw token after 'confidence='); anything else, including None and 'DIAGNOSIS:' text without the grammar, returns None. Add render_table(projects: list) -> str consuming load_projects' output: skip (name, exception) tuples silently; for each readable board emit header '== <name> ==', one format_task_row line per task in board['tasks'] order (a board without a tasks list renders the header only), then one indented line '  DIAGNOSIS: <cause> (confidence=<confidence>) remedy=<remedy>' per task whose parse_diagnosis is not None; join all lines with '\n' and no trailing newline; empty input returns ''. Do not change earlier functions.",
+      "target_files": [
+        "src/boardscan.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [
+        "T-DATALOADER"
+      ],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "tests/test_rendering.py is collected and green",
+        "row columns [id, TITLE, STATUS, ATTEMPTS, DEPS] joined ' | '",
+        "parse_diagnosis grammar strict, else None",
+        "render_table: headers, rows, indented diagnosis lines"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 1,
+      "status": "pending",
+      "last_feedback": "deferred (LLM capacity): all free candidates exhausted for role builder_patch: openrouter:nvidia/nemotron-3-ultra-550b-a55b:free: 'NoneType' object is not subscriptable",
+      "error_signature": "ERR_BOARDSCAN",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "authored_test_path": "tests/test_rendering.py",
+      "completed_at": null,
+      "auto_requeues": 1,
+      "failed_at": null,
+      "defer_until": "2026-10-17T06:51:37.946792+00:00",
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-CLI",
+      "title": "CLI wiring, exit codes, --json",
+      "objective": "Extend src/boardscan.py KEEPING load_projects, format_task_row, parse_diagnosis and render_table unchanged. Add main(argv: list[str] | None = None) -> int with argparse flags [--root PATH] [--project NAME] [--json]: print render_table(load_projects(root, project)) to stdout and return 0 for a normal run (an empty projects dir prints nothing and returns 0); when any project's board was unreadable, print one line per such project to stderr containing the project name and return 1 AFTER printing the other projects; SystemExit(2) from load_projects (missing root, unknown --project) propagates uncaught; argparse errors exit 2 via argparse itself. --json prints json.dumps(payload, indent=2) of an array over the READABLE projects only, each element {'project': name, 'tasks': [{'id','title','status','retry_count','dependencies'} in board order with status verbatim], 'diagnoses': [{'task_id','cause','confidence','remedy','raw'} per well-formed diagnosis, raw = the full feedback string]} -- unreadable boards stay on stderr and still force return 1. Finish with if __name__ == '__main__': raise SystemExit(main()). No network; stdlib only. Do not change earlier functions.",
+      "target_files": [
+        "src/boardscan.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [
+        "T-RENDERER"
+      ],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "tests/test_cli.py is collected and green",
+        "exit 0 normal / 1 unreadable-but-continuing / 2 usage or missing",
+        "--json round-trips {'project','tasks','diagnoses'} entries"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "pending",
+      "last_feedback": null,
+      "error_signature": "ERR_BOARDSCAN",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "authored_test_path": "tests/test_cli.py",
+      "completed_at": null,
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    }
+  ]
+}

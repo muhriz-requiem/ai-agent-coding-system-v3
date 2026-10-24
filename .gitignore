@@ -1,0 +1,92 @@
+# ---------------------------------------------------------------------------
+# Secrets -- NEVER commit these.
+# `.env` holds live provider keys (OpenRouter, Groq, Gemini, Cloudflare,
+# Z.ai, NVIDIA, Cohere) and per-project `.env` files hold brokerage/EDGAR
+# credentials.  `.env.example` IS tracked: it is the documented template.
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# Backup copies of anything above.  `.env.bak` is the obvious one, and it is
+# the trap this rule closes: the `.env` pattern above does NOT cover
+# `.env.bak`, so a copy taken "just in case" sits in the tree looking harmless
+# and is committable.  Checked before adding this, and confirmed that a copy
+# placed *inside* an already-ignored directory (.shared_workspace/) was
+# incidentally covered -- but nothing stopped one being written to a project
+# directory, where it would be tracked.
+*.bak
+*.backup
+*.bak-*
+*_backup*
+*_backup.*
+
+# Kaggle API token (the CLI also reads ~/.kaggle/kaggle.json, outside the repo)
+.kaggle/
+
+# Private keys and credential material, wherever they land
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+id_rsa
+id_rsa.*
+id_ed25519*
+.netrc
+.npmrc
+.pypirc
+credentials
+credentials.*
+*secrets*.json
+service-account*.json
+
+# ---------------------------------------------------------------------------
+# Orchestration state -- machine-local, regenerated on every run
+# ---------------------------------------------------------------------------
+logs/
+.system/
+.shared_workspace/
+.agent/
+pause.flag
+# Coding-agent working logs (the operator helper writes these outside the tree
+# by default; ignored here so a run that lands inside the repo stays untracked).
+runlogs/
+
+# ---------------------------------------------------------------------------
+# Project artifacts
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Bulk data, submissions and model artifacts: re-downloadable, never in git.
+# Scoped to the project data dirs -- a small fixture CSV committed on purpose
+# under tests/ stays tracked.
+projects/*/data/raw/
+projects/*/data/processed/
+projects/*/submissions/
+projects/*/reports/
+projects/*/experiments/artifacts/
+projects/*/*.parquet
+projects/*/*.pkl
+projects/*/*.joblib
+projects/*/*.h5
+projects/*/*.onnx
+projects/*/*.pt
+*.parquet
+*.joblib
+*.onnx
+
+# ---------------------------------------------------------------------------
+# Environments / editors / OS
+# ---------------------------------------------------------------------------
+.venv/
+venv/
+env/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

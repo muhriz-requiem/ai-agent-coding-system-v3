@@ -1,0 +1,117 @@
+{
+  "tasks": [
+    {
+      "id": "T-DATALOADER",
+      "title": "Data loading and manifest reading",
+      "objective": "Implement data loading in src/boardscan.py: load_projects(root: str, project: str | None = None) -> list[tuple[str, object]]. Iterate <root>/projects/* (directories only, sorted ascending by directory name); skip a project entirely when its .agent/task_board.json is missing; return (name, parsed-board-dict) for readable boards and (name, exception) for unreadable ones (capture JSONDecodeError/OSError -- invalid JSON is data, never a mid-scan abort). If root is not an existing directory, raise SystemExit(2). If project is given and <root>/projects/<project> is not a directory, print 'no such project: <project>' to stderr and raise SystemExit(2); otherwise filter the result to that project. No network; stdlib only.",
+      "target_files": [
+        "src/boardscan.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "tests/test_loader.py is collected and green",
+        "invalid JSON becomes an (name, exception) tuple, scan continues",
+        "missing root / unknown project raise SystemExit(2)"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_BOARDSCAN",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "authored_test_path": "tests/test_loader.py",
+      "completed_at": "2026-10-17T04:48:31Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-RENDERER",
+      "title": "Task rows and diagnosis parsing",
+      "objective": "src/boardscan.py ALREADY EXISTS. Its approved, gate-passed content is reproduced below between the markers. You must output the COMPLETE file: first reproduce the marked content EXACTLY (same function names, same signatures, same behavior -- this is what the previous task built and its tests pin), then append the new functions as specified after the markers. Do not rename or change anything in the marked part.\n---- BEGIN CURRENT CONTENT OF src/boardscan.py ----\nimport json\nimport os\nimport sys\n\ndef load_projects(root: str, project: str | None = None) -> list[tuple[str, object]]:\n    \"\"\"\n    Load projects from <root>/projects/* (directories only, sorted ascending by name).\n    - If root is not an existing directory, raise SystemExit(2).\n    - If project is given and <root>/projects/<project> is not a directory, \n      print 'no such project: <project>' to stderr and raise SystemExit(2).\n    - Skip a project entirely when its .agent/task_board.json is missing.\n    - Return (name, parsed-board-dict) for readable boards and (name, exception) \n      for unreadable ones (JSONDecodeError/OSError).\n    \"\"\"\n    root_path = os.path.abspath(root) if root else \"\"\n    if not root or not os.path.isdir(root_path):\n        raise SystemExit(2)\n\n    projects_dir = os.path.join(root_path, \"projects\")\n\n    if project is not None:\n        proj_path = os.path.join(projects_dir, project)\n        if not os.path.isdir(proj_path):\n            sys.stderr.write(f\"no such project: {project}\\n\")\n            raise SystemExit(2)\n\n    if not os.path.isdir(projects_dir):\n        return []\n\n    try:\n        entries = sorted(\n            [e.name for e in os.scandir(projects_dir) if e.is_dir()],\n            key=lambda s: s\n        )\n    except OSError:\n        return []\n\n    if project is not None:\n        if project in entries:\n            entries = [project]\n        else:\n            entries = []\n\n    results: list[tuple[str, object]] = []\n\n    for name in entries:\n        board_path = os.path.join(projects_dir, name, \".agent\", \"task_board.json\")\n        if not os.path.isfile(board_path):\n            continue\n\n        try:\n            with open(board_path, \"r\", encoding=\"utf-8\") as f:\n                data = json.load(f)\n            results.append((name, data))\n        except (json.JSONDecodeError, OSError) as e:\n            results.append((name, e))\n\n    return results\n---- END CURRENT CONTENT OF src/boardscan.py ----\nNow ADD to the same file: format_task_row(task: dict) -> str rendering one task as columns [id, TITLE, STATUS, ATTEMPTS, DEPS] joined by ' | ': in id and in title, first replace every '\\r\\n' sequence with a single space, then replace every remaining '\\n' and every remaining '\\r' with a single space (so 'Line1\\r\\nLine2' becomes 'Line1 Line2' with ONE space between the words; see the worked example further below); STATUS is the task status verbatim when it is one of done|pending|failed else '?'; ATTEMPTS is str(task['retry_count']) when the key exists, else '0'; DEPS is ', '.join(dependencies) when dependencies is a non-empty list, else '-'. Worked example: format_task_row({'id': 'X\\nY', 'title': 'Line1\\r\\nLine2'}) must return exactly 'X Y | Line1 Line2 | ? | 0 | -' (five columns joined by ' | '; empty DEPS renders as '-'). Add parse_diagnosis(feedback: str | None) -> dict | None: only feedback that starts with 'DIAGNOSIS:' AND matches 'DIAGNOSIS: <cause> (confidence=<confidence>) remedy=<remedy>' returns {'cause': str, 'confidence': str, 'remedy': str} (confidence is the raw token after 'confidence='); anything else, including None and 'DIAGNOSIS:' text without the grammar, returns None. Add render_table(projects: list) -> str consuming load_projects' output (list of (name, board-or-exception) tuples; a board is a dict): skip (name, exception) tuples silently; for each readable board emit header '== <name> ==', one format_task_row line per task in board['tasks'] order (a board without a tasks list renders the header only), then one indented line '  DIAGNOSIS: <cause> (confidence=<confidence>) remedy=<remedy>' per task whose 'last_feedback' parses via parse_diagnosis; join all lines with '\\n' and no trailing newline; empty input returns ''. Keep load_projects EXACTLY as given above. No network; stdlib only.",
+      "target_files": [
+        "src/boardscan.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [
+        "T-DATALOADER"
+      ],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "tests/test_rendering.py is collected and green",
+        "row columns [id, TITLE, STATUS, ATTEMPTS, DEPS] joined ' | '",
+        "parse_diagnosis grammar strict, else None",
+        "render_table: headers, rows, indented diagnosis lines"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_ROW_EOL",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "authored_test_path": "tests/test_rendering.py",
+      "completed_at": "2026-10-17T06:51:32Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-CLI",
+      "title": "CLI wiring, exit codes, --json",
+      "objective": "src/boardscan.py ALREADY EXISTS. Its approved, gate-passed content is reproduced below between the markers. You must output the COMPLETE file: first reproduce the marked content EXACTLY (same function names, same signatures, same behavior -- the previous tasks built it and its tests pin it), then append the new functions as specified after the markers. Do not rename or change anything in the marked part.\n---- BEGIN CURRENT CONTENT OF src/boardscan.py ----\nimport json\nimport os\nimport re\nimport sys\n\ndef load_projects(root: str, project: str | None = None) -> list[tuple[str, object]]:\n    \"\"\"\n    Load projects from <root>/projects/* (directories only, sorted ascending by name).\n    - If root is not an existing directory, raise SystemExit(2).\n    - If project is given and <root>/projects/<project> is not a directory, \n      print 'no such project: <project>' to stderr and raise SystemExit(2).\n    - Skip a project entirely when its .agent/task_board.json is missing.\n    - Return (name, parsed-board-dict) for readable boards and (name, exception) \n      for unreadable ones (JSONDecodeError/OSError).\n    \"\"\"\n    root_path = os.path.abspath(root) if root else \"\"\n    if not root or not os.path.isdir(root_path):\n        raise SystemExit(2)\n\n    projects_dir = os.path.join(root_path, \"projects\")\n\n    if project is not None:\n        proj_path = os.path.join(projects_dir, project)\n        if not os.path.isdir(proj_path):\n            sys.stderr.write(f\"no such project: {project}\\n\")\n            raise SystemExit(2)\n\n    if not os.path.isdir(projects_dir):\n        return []\n\n    try:\n        entries = sorted(\n            [e.name for e in os.scandir(projects_dir) if e.is_dir()],\n            key=lambda s: s\n        )\n    except OSError:\n        return []\n\n    if project is not None:\n        if project in entries:\n            entries = [project]\n        else:\n            entries = []\n\n    results: list[tuple[str, object]] = []\n\n    for name in entries:\n        board_path = os.path.join(projects_dir, name, \".agent\", \"task_board.json\")\n        if not os.path.isfile(board_path):\n            continue\n\n        try:\n            with open(board_path, \"r\", encoding=\"utf-8\") as f:\n                data = json.load(f)\n            results.append((name, data))\n        except (json.JSONDecodeError, OSError) as e:\n            results.append((name, e))\n\n    return results\n\ndef _normalize_text(text: str) -> str:\n    if not text:\n        return \"\"\n    # Replace \\r\\n first with single space, then remaining \\n and \\r with single space\n    text = text.replace(\"\\r\\n\", \" \")\n    text = text.replace(\"\\n\", \" \")\n    text = text.replace(\"\\r\", \" \")\n    return text\n\ndef format_task_row(task: dict) -> str:\n    \"\"\"\n    Render one task as columns [id, TITLE, STATUS, ATTEMPTS, DEPS] joined by ' | '.\n    - id and title: replace every '\\r\\n' with a single space, then remaining '\\n' and '\\r' with a single space.\n    - STATUS: verbatim when one of done|pending|failed else '?'\n    - ATTEMPTS: str(task['retry_count']) when key exists, else '0'\n    - DEPS: ', '.join(dependencies) when dependencies is a non-empty list, else '-'\n    \"\"\"\n    raw_id = str(task.get(\"id\", \"\"))\n    raw_title = str(task.get(\"title\", \"\"))\n\n    tid = _normalize_text(raw_id)\n    ttitle = _normalize_text(raw_title)\n\n    status = task.get(\"status\")\n    if status not in (\"done\", \"pending\", \"failed\"):\n        status = \"?\"\n\n    attempts = str(task[\"retry_count\"]) if \"retry_count\" in task else \"0\"\n\n    deps = task.get(\"dependencies\")\n    if isinstance(deps, list) and deps:\n        deps_str = \", \".join(str(d) for d in deps)\n    else:\n        deps_str = \"-\"\n\n    return f\"{tid} | {ttitle} | {status} | {attempts} | {deps_str}\"\n\ndef parse_diagnosis(feedback: str | None) -> dict | None:\n    \"\"\"\n    Only feedback that starts with 'DIAGNOSIS:' AND matches\n    'DIAGNOSIS: <cause> (confidence=<confidence>) remedy=<remedy>' returns\n    {'cause': str, 'confidence': str, 'remedy': str}; otherwise None.\n    \"\"\"\n    if not isinstance(feedback, str):\n        return None\n    \n    pattern = r\"^DIAGNOSIS: (.+) \\(confidence=(.+)\\) remedy=(.+)$\"\n    match = re.match(pattern, feedback)\n    if not match:\n        return None\n\n    cause, confidence, remedy = match.groups()\n    return {\n        \"cause\": cause,\n        \"confidence\": confidence,\n        \"remedy\": remedy\n    }\n\ndef render_table(projects: list) -> str:\n    \"\"\"\n    Consuming load_projects' output (list of (name, board-or-exception) tuples):\n    - Skip (name, exception) tuples silently.\n    - For each readable board emit header '== <name> ==',\n      one format_task_row line per task in board['tasks'] order (board without tasks renders header only),\n      then one indented line '  DIAGNOSIS: <cause> (confidence=<confidence>) remedy=<remedy>' per task\n      whose 'last_feedback' parses via parse_diagnosis.\n    - Join all lines with '\\\\n' and no trailing newline.\n    - Empty input returns ''.\n    \"\"\"\n    lines: list[str] = []\n\n    for item in projects:\n        if not isinstance(item, tuple) or len(item) != 2:\n            continue\n        name, board = item\n        if isinstance(board, BaseException) or not isinstance(board, dict):\n            continue\n\n        lines.append(f\"== {name} ==\")\n\n        tasks = board.get(\"tasks\")\n        if isinstance(tasks, list):\n            for task in tasks:\n                if isinstance(task, dict):\n                    lines.append(format_task_row(task))\n                    feedback = task.get(\"last_feedback\")\n                    parsed = parse_diagnosis(feedback)\n                    if parsed is not None:\n                        diag_line = f\"  DIAGNOSIS: {parsed['cause']} (confidence={parsed['confidence']}) remedy={parsed['remedy']}\"\n                        lines.append(diag_line)\n\n    return \"\\n\".join(lines)\n---- END CURRENT CONTENT OF src/boardscan.py ----\nNow ADD to the same file: main(argv: list[str] | None = None) -> int wiring argparse flags [--root PATH] [--project NAME] [--json]: print render_table(load_projects(root, project)) to stdout and return 0 for a normal run (an empty projects dir prints nothing and returns 0); when any project's board was unreadable, print one line per such project to stderr containing the project name and return 1 AFTER printing the other projects' sections; SystemExit(2) from load_projects (missing root, unknown --project) propagates uncaught; argparse errors exit 2 via argparse itself. --json prints json.dumps(payload, indent=2) of an array over the READABLE projects only, each element {'project': name, 'tasks': [{'id','title','status','retry_count','dependencies'} in board order with status verbatim], 'diagnoses': [{'task_id','cause','confidence','remedy','raw'} per task whose parse_diagnosis is not None, raw = the task's full last_feedback string]} -- unreadable boards stay on stderr and still force return 1. Finish with if __name__ == '__main__': raise SystemExit(main()). Keep every earlier function EXACTLY as given above. No network; stdlib only.",
+      "target_files": [
+        "src/boardscan.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [
+        "T-RENDERER"
+      ],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "tests/test_cli.py is collected and green",
+        "exit 0 normal / 1 unreadable-but-continuing / 2 usage or missing",
+        "--json round-trips {'project','tasks','diagnoses'} entries"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 1,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_CLI_EXTEND",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "authored_test_path": "tests/test_cli.py",
+      "completed_at": "2026-10-17T07:28:08Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    }
+  ]
+}

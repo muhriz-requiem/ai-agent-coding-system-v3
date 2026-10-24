@@ -1,0 +1,10 @@
+{
+  "task_id": "T-CLI",
+  "attempts": 2,
+  "verdict": "APPROVED",
+  "model_used": "builder_patch",
+  "duration_s": 81.81,
+  "escalated": false,
+  "reason": null,
+  "files_applied": 1
+}

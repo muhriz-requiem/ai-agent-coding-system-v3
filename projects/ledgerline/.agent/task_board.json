@@ -1,0 +1,258 @@
+{
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "Money formatting and parsing",
+      "objective": "Implement parse_amount(text: str) -> int and format_amount(minor_units: int) -> str in src/ledger/money.py. parse_amount parses string decimal amounts into integer minor units (cents), raising ValueError on malformed input. format_amount converts minor units back to a decimal string representation.",
+      "target_files": [
+        "src/ledger/money.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "parse_amount('10.50') returns 1050",
+        "format_amount(1050) returns '10.50'",
+        "parse_amount('invalid') raises ValueError"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_MONEY",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-06T01:33:15Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-002",
+      "title": "Account model and normal balance",
+      "objective": "Implement AccountType enum (ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE), Account dataclass (id: str, name: str, type: AccountType), and normal_balance(account_type: AccountType) -> str in src/ledger/accounts.py. normal_balance returns 'DEBIT' for ASSET and EXPENSE, and 'CREDIT' for LIABILITY, EQUITY, and REVENUE, raising ValueError for unknown types.",
+      "target_files": [
+        "src/ledger/accounts.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [
+        "T-001"
+      ],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "AccountType has five exact members",
+        "Account dataclass stores id, name, type",
+        "normal_balance(AccountType.ASSET) returns 'DEbit' or 'DEBIT'"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_ACCOUNTS",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-06T01:34:22Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-003",
+      "title": "Journal postings and entries",
+      "objective": "Implement Side enum (DEBIT, CREDIT), Posting dataclass (account_id: str, amount_minor: int, side: Side), and JournalEntry dataclass (date: str, memo: str, postings: list[Posting]) in src/ledger/journal.py. JournalEntry.__post_init__ raises ValueError when total debit amount_minor does not equal total credit amount_minor, or when len(postings) < 2.",
+      "target_files": [
+        "src/ledger/journal.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [
+        "T-001",
+        "T-002"
+      ],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "JournalEntry raises ValueError with unbalanced postings",
+        "JournalEntry raises ValueError with fewer than 2 postings",
+        "Valid JournalEntry initializes successfully"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_JOURNAL",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-06T01:34:33Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-004",
+      "title": "Ledger engine",
+      "objective": "Implement the `Ledger` class in `src/ledger/ledger.py` and the `JournalEntry` class in the same file `src/ledger/ledger.py`. The `Ledger` class must expose the methods `add_entry(self, entry: JournalEntry)`, `balance_of(self, account_id: str) -> int`, `balances(self) -> dict`, and `is_balanced(self) -> bool`. The `JournalEntry` class must be instantiable with no required arguments for the happy path (`JournalEntry()`). Ensure all imports within `ledger.py` resolve and that the module `src.ledger.ledger` imports successfully without raising errors.",
+      "target_files": [
+        "src/ledger/ledger.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [
+        "T-001",
+        "T-002",
+        "T-003"
+      ],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "add_entry adds valid entries",
+        "balance_of returns correct integer balance",
+        "is_balanced returns True when debits equal credits"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_LEDGER",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-06T21:31:40Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-005",
+      "title": "Trial balance report",
+      "objective": "Implement trial_balance(ledger: Ledger) -> list[TrialBalanceRow] in src/ledger/trial_balance.py. TrialBalanceRow is a dataclass with account_id: str, debit_total: int, credit_total: int.",
+      "target_files": [
+        "src/ledger/trial_balance.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "trial_balance returns list of TrialBalanceRow",
+        "debit_total and credit_total are computed correctly per account"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_TRIALBALANCE",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-06T01:38:30Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-006",
+      "title": "Financial reports",
+      "objective": "Implement income_statement(ledger: Ledger, start: str, end: str) -> dict and balance_sheet(ledger: Ledger, as_of: str) -> dict in src/ledger/reports.py. Returns summary dictionaries of revenues/expenses and assets/liabilities/equity.",
+      "target_files": [
+        "src/ledger/reports.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [
+        "T-005"
+      ],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "income_statement returns dict of revenues and expenses",
+        "balance_sheet returns dict of assets, liabilities, and equity"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_REPORTS",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-06T18:37:34Z",
+      "auto_requeues": 1,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-007",
+      "title": "CSV import and CLI",
+      "objective": "Implement parse_csv(text: str) -> list[JournalEntry] in src/ledger/csv_import.py and main(argv: list[str]) -> int in src/ledger/cli.py. parse_csv parses date, memo, account, side, and amount columns. main reads a CSV file path from argv and prints a trial balance, returning 0 on success.",
+      "target_files": [
+        "src/ledger/csv_import.py",
+        "src/ledger/cli.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "parse_csv parses CSV text into JournalEntry objects",
+        "main reads file path and prints trial balance returning 0"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 2,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_CSVIMPORT",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-06T18:28:39Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    }
+  ]
+}

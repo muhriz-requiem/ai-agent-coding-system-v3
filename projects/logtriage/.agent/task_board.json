@@ -1,0 +1,174 @@
+{
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "JSONL event-log reader with tolerant normalisation",
+      "objective": "Create src/triage/reader.py exposing exactly three functions.\n\nAPI (pin these signatures exactly):\n\nparse_rows(lines: Sequence[str]) -> dict\n    Returns {\"events\": list[dict], \"malformed\": int}.\n    Each event dict has EXACTLY these four keys: \"ts\", \"level\", \"message\", \"data\".\n      - \"ts\": the raw string, or None when it is not an ISO-8601 timestamp. The\n        real reference log contains a row with \"ts\": \"probe\"; that must yield\n        None, NOT an exception and NOT malformed.\n      - \"level\": uppercased. Defaults to \"INFO\" when absent or empty.\n      - \"message\": str(value), so a numeric message becomes its string form.\n        Defaults to \"\".\n      - \"data\": the parsed object when it is a dict; otherwise\n        {\"_raw\": str(value)}.\n    A line that is not valid JSON increments \"malformed\" by 1 and produces no\n    event.\n    Blank or whitespace-only lines are ignored entirely (neither event nor\n    malformed).\n    Never raises on any input.\n\nload_log(path: str | Path) -> dict\n    Same return shape as parse_rows, reading the file's lines. A missing or\n    unreadable file returns {\"events\": [], \"malformed\": 0}. Does not raise.\n\ncount_messages(events: Sequence[dict]) -> dict[str, int]\n    Message -> occurrence count, sorted by descending count then ascending key.\n    Empty input returns {}.\n\nConstraints: standard library only; no network, no clock, no module-level state.",
+      "target_files": [
+        "src/triage/reader.py"
+      ],
+      "dependencies": [],
+      "priority": "high",
+      "acceptance_criteria": [
+        "tests/test_reader.py is collected and fully green (no skips)",
+        "entire project suite green",
+        "no network access"
+      ],
+      "retry_count": 1,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_TRIAGE_READER",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-04T21:14:50Z",
+      "failed_at": null,
+      "auto_requeues": 0,
+      "defer_until": null
+    },
+    {
+      "id": "T-002",
+      "title": "Nearest-rank percentiles, per-role latency and IQR outliers",
+      "objective": "Create src/triage/latency.py exposing exactly three functions.\n\nAPI (pin these signatures exactly):\n\npercentile(values: Sequence[float], q: float) -> float\n    NEAREST-RANK, no interpolation: sort a copy, index = ceil(q/100 * n) - 1,\n    clamped to [0, n-1], return float. Empty input returns 0.0. Quantiles\n    outside 0..100 clamp rather than raise. Must NOT mutate the argument.\n\nrole_latency(events: Sequence[dict]) -> dict[str, dict]\n    Considers only events whose \"message\" == \"llm_exchange\" AND whose data\n    carries a numeric \"duration_s\" and a \"model_role\" string. Returns\n    role -> {\"count\": int, \"median\": float, \"p90\": float, \"max\": float},\n    with keys sorted ascending. \"count\" is the number of samples;\n    median/p90 come from percentile(); \"max\" is float(max(samples)).\n    Empty input returns {}. Roles with no valid duration_s are omitted.\n\noutliers(events: Sequence[dict], factor: float = 1.5) -> list[dict]\n    Over the same eligible population as role_latency. Requires AT LEAST FOUR\n    samples per role; a role with fewer contributes nothing (IQR is meaningless\n    on 3 points and must not manufacture an outlier). For each qualifying role\n    compute q1 = percentile(durations, 25), q3 = percentile(durations, 75),\n    iqr = q3 - q1, threshold = q3 + factor * iqr; if the largest duration is\n    strictly greater than the threshold, report ONE entry for that role with\n    EXACTLY these keys: \"model_role\" (str), \"duration_s\" (float, the max),\n    \"threshold\" (float). A list, not a dict: a diagnostic caller wants to see\n    the threshold that flagged the value, and a list is naturally sortable.\n    Sort by descending duration_s, then ascending model_role. Empty input\n    returns []. An empty list is falsy, so `assert outliers(x) == []`.\n\nConstraints: standard library only (math is fine); no network, no clock.",
+      "target_files": [
+        "src/triage/latency.py"
+      ],
+      "dependencies": [
+        "T-001"
+      ],
+      "priority": "high",
+      "acceptance_criteria": [
+        "tests/test_latency.py is collected and fully green (no skips)",
+        "entire project suite green",
+        "no network access"
+      ],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_TRIAGE_LATENCY",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-05T00:47:23Z",
+      "failed_at": null,
+      "auto_requeues": 0,
+      "defer_until": null
+    },
+    {
+      "id": "T-003",
+      "title": "Failure clustering by normalised signature shape",
+      "objective": "Create src/triage/failures.py exposing exactly three functions.\n\nAPI (pin these signatures exactly):\n\nnormalise_signature(signature) -> str\n    Collapse a signature to its SHAPE. Steps, in order:\n      1. str(signature or \"\").upper(), then replace \"-\", \" \" and \":\" with \"_\".\n      2. Split on \"_\", dropping empty parts.\n      3. Drop parts equal to \"ERR\" or \"TASK\".\n      4. A part equal to \"T\", or matching the regex [A-Z]?\\d+[A-Z]? in full,\n         becomes the literal \"<N>\". This is an instance id.\n         CRITICAL: a digit embedded mid-word does NOT collapse -- \"UNIQUE0\" and\n         \"UNIQUE1\" must stay distinct, because otherwise three unrelated\n         failures that merely share a suffix look like one systemic bug.\n      5. Collapse consecutive duplicate parts.\n      6. Rejoin with \"_\".\n    Must be idempotent. Empty/None input returns \"\".\n\nfailure_shapes(events: Sequence[dict]) -> list[dict]\n    Considers only events whose \"message\" is \"task_escalated\" or\n    \"task_failed\" AND whose data has a non-empty \"reason\" (that is the\n    signature). Groups by normalise_signature(reason). Returns a list of dicts\n    with EXACTLY these keys: \"shape\" (str), \"count\" (int), \"signatures\" (the\n    distinct original reason strings, sorted ascending), \"task_ids\" (the\n    distinct data[\"task_id\"] strings present, sorted ascending; entries with no\n    task_id are simply absent). Sorted by descending count, then ascending\n    shape. Empty input returns [].\n\ngeneric_signature(events: Sequence[dict]) -> str\n    Using the same eligible population as failure_shapes: take only\n    shapes occurring at least twice, and require AT LEAST TWO DISTINCT\n    such shapes -- a root cause is established by comparison, so one\n    shape can never produce one and returns \"\".\n    Split each qualifying shape on \"_\" and DISCARD the \"<N>\"\n    placeholder token: it is shared by every normalised signature, so\n    keeping it would make every cluster report the same meaningless\n    answer. Intersect the surviving tokens across all qualifying shapes.\n    Return the single shared token, UPPERCASED, but ONLY when the\n    intersection holds exactly one token; if it is empty (the shapes\n    agree on nothing but <N>) or holds more than one (ambiguous), return\n    \"\". Empty input returns \"\".\n\nConstraints: standard library only (re is fine); no network, no clock.",
+      "target_files": [
+        "src/triage/failures.py"
+      ],
+      "dependencies": [
+        "T-001"
+      ],
+      "priority": "high",
+      "acceptance_criteria": [
+        "tests/test_failures.py is collected and fully green (no skips)",
+        "entire project suite green",
+        "no network access"
+      ],
+      "retry_count": 2,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_TRIAGE_FAILURES",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-04T23:40:00+00:00",
+      "failed_at": null,
+      "auto_requeues": 0,
+      "defer_until": null,
+      "notes": "Completed by the operator after 4 escalations caused by spec ambiguity, not a harness defect. Root cause of the escalations traced to the Reviewer receiving only a 400-char pytest tail with no failing-test node IDs; fixed in v2.8 (reviewer evidence)."
+    },
+    {
+      "id": "T-004",
+      "title": "Provider reliability, cooldown tally and fallback rate",
+      "objective": "Create src/triage/providers.py exposing exactly three functions.\n\nShared helper (module-private):\n  _split(model: str) -> tuple[str, str]\n    str(model).partition(\":\") -> (provider, rest); when rest is empty return\n    (model, model). Models may themselves contain colons, e.g.\n    \"openrouter:qwen/qwen3.8-27b:free\" -> (\"openrouter\", \"qwen/qwen3.8-27b:free\").\n\nAPI (pin these signatures exactly):\n\nprovider_stats(events: Sequence[dict]) -> dict[str, dict]\n    A \"successful call\" is an event whose \"message\" == \"llm_exchange\" with a\n    numeric data[\"duration_s\"]. A \"failed call\" is an event whose \"message\" ==\n    \"llm_model_failed_trying_fallback\"; a failure whose error text contains\n    \"wall-clock budget\" counts as a TIMEOUT, every other failure counts as an\n    ERROR. The provider is _split(data[\"model\"])[0]. Returns provider -> dict\n    with EXACTLY these keys: \"calls\" (successful calls, int), \"errors\" (int,\n    timeouts excluded), \"timeouts\" (int), \"success_rate\" (float: calls divided\n    by calls+errors+timeouts, and 1.0 when that total is 0), \"median_s\" (float:\n    median of the SUCCESSFUL durations only, 0.0 when there are none). Keys\n    sorted ascending. Empty input returns {}.\n\ncooldown_events(events: Sequence[dict]) -> list[dict]\n    Events whose \"message\" == \"provider_cooldown\". Returns one dict per\n    (provider, reason) pair with EXACTLY the keys \"provider\", \"reason\", \"count\",\n    sorted by descending count, then ascending provider, then ascending reason.\n    Events missing provider or reason are skipped. Empty input returns [].\n\nfallback_rate(events: Sequence[dict]) -> float\n    Failed calls (same definition as provider_stats) divided by total calls\n    (successful + failed), as a float. Returns 0.0 when there is no evidence at\n    all -- no evidence is not evidence of failure.\n\nConstraints: standard library only; no network, no clock.",
+      "target_files": [
+        "src/triage/providers.py"
+      ],
+      "dependencies": [
+        "T-001"
+      ],
+      "priority": "high",
+      "acceptance_criteria": [
+        "tests/test_providers.py is collected and fully green (no skips)",
+        "entire project suite green",
+        "no network access"
+      ],
+      "retry_count": 1,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_TRIAGE_PROVIDERS",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-05T01:32:13Z",
+      "failed_at": null,
+      "auto_requeues": 1,
+      "defer_until": null
+    },
+    {
+      "id": "T-005",
+      "title": "Token accounting from llm_usage, prompt-head sizing from llm_exchange",
+      "objective": "Create src/triage/cost.py exposing exactly three functions.\n\nThe two sources are deliberately kept apart: \"llm_usage\" carries real SDK\nnumbers, \"llm_exchange\" carries only TRUNCATED prompt/response heads. Mixing\nthem would understate cost, so they are reported by three separate functions.\n\nAPI (pin these signatures exactly):\n\ntoken_totals(events: Sequence[dict]) -> dict\n    Only events whose \"message\" == \"llm_usage\" AND whose data has a numeric\n    \"prompt_tokens\". Returns EXACTLY these keys: \"prompt\" (int sum),\n    \"completion\" (int sum), \"total\" (int sum), \"records\" (int count of events\n    counted). For each event: take \"completion_tokens\" and \"total_tokens\" as\n    ints defaulting to 0, IGNORING NEGATIVE values by clamping them to 0. When\n    total == 0, derive it as prompt + completion. An event whose \"total\" is\n    still 0 after that is still counted in \"records\" but adds nothing.\n    Empty input returns {\"prompt\": 0, \"completion\": 0, \"total\": 0, \"records\": 0}.\n\nrole_tokens(events: Sequence[dict]) -> dict[str, int]\n    Over the same eligible population, data[\"model_role\"] -> summed\n    \"total_tokens\". Keys sorted ascending. Empty input returns {}.\n\nexchange_sizes(events: Sequence[dict]) -> dict\n    Only events whose \"message\" == \"llm_exchange\". Returns EXACTLY these keys:\n    \"max_prompt_head\" (int: longest len(str(data[\"prompt_head\"])), 0 when\n    absent), \"max_response_head\" (int, same for \"response_head\"),\n    \"mean_prompt_head\" (float: mean prompt-head length, 0.0 when there are no\n    events), \"count\" (int: number of llm_exchange events).\n    Empty input returns {\"max_prompt_head\": 0, \"max_response_head\": 0,\n    \"mean_prompt_head\": 0.0, \"count\": 0}.\n\nConstraints: standard library only; no network, no clock.",
+      "target_files": [
+        "src/triage/cost.py"
+      ],
+      "dependencies": [
+        "T-001"
+      ],
+      "priority": "high",
+      "acceptance_criteria": [
+        "tests/test_cost.py is collected and fully green (no skips)",
+        "entire project suite green",
+        "no network access"
+      ],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_TRIAGE_COST",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-05T01:13:44Z",
+      "failed_at": null,
+      "auto_requeues": 0,
+      "defer_until": null
+    },
+    {
+      "id": "T-006",
+      "title": "Report composition with a reconciling event ledger",
+      "objective": "Create src/triage/report.py exposing exactly two functions. This is the composition layer: it calls the other five modules and assembles one dict.\n\nAPI (pin these signatures exactly):\n\nanalyse(events: Sequence[dict], malformed: int = 0) -> dict\n    Returns a dict with EXACTLY these five top-level keys:\n      \"events\":   {\"total\": int (len(events)), \"malformed\": int (the argument),\n                  \"ledger\": {message: count} from reader.count_messages(events)}\n      \"latency\":  {\"roles\": latency.role_latency(events),\n                  \"outliers\": latency.outliers(events)}\n      \"failures\": {\"shapes\": failures.failure_shapes(events),\n                  \"generic_signature\": failures.generic_signature(events)}\n      \"providers\":{\"stats\": providers.provider_stats(events),\n                  \"cooldowns\": providers.cooldown_events(events),\n                  \"fallback_rate\": providers.fallback_rate(events)}\n      \"cost\":     {\"totals\": cost.token_totals(events),\n                  \"per_role\": cost.role_tokens(events),\n                  \"sizes\": cost.exchange_sizes(events)}\n    Empty input must still produce every one of those keys with a well-formed\n    empty value. The result must be JSON-serialisable and deterministic for a\n    given input.\n\nanalyse_file(path: str | Path) -> dict\n    parsed = reader.load_log(path); return analyse(parsed[\"events\"],\n    malformed=parsed[\"malformed\"]). A missing file yields the same empty report\n    with malformed == 0.\n\nThe event ledger is the reconciliation that makes the report trustworthy: sum(ledger.values()) must equal events.total for any input, because every parsed event has exactly one message. Do not filter, sample or drop events.\n\nConstraints: standard library only; no network, no clock; no printing, no file writes.\n\nIMPORT CONTRACT (pinned after two attempts failed with `missing modules: triage`): the package lives under src/, so every intra-project import MUST be absolute from the project root and MUST include the `src.` prefix:\n\n    from src.triage import cost, failures, latency, providers\n    from src.triage.reader import count_messages, load_log\n\nNever `from triage.reader import ...` and never a relative `from .reader import ...`: the project root is what is on sys.path, not src/. That form raises ModuleNotFoundError at collection, which the gate reports as a missing module rather than a code error.",
+      "target_files": [
+        "src/triage/report.py"
+      ],
+      "dependencies": [
+        "T-002",
+        "T-003",
+        "T-004",
+        "T-005"
+      ],
+      "priority": "high",
+      "acceptance_criteria": [
+        "tests/test_report.py is collected and fully green (no skips)",
+        "entire project suite green",
+        "no network access"
+      ],
+      "retry_count": 2,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_TRIAGE_REPORT",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-05T06:16:03Z",
+      "failed_at": null,
+      "auto_requeues": 1,
+      "defer_until": null
+    }
+  ]
+}

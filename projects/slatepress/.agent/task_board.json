@@ -1,0 +1,176 @@
+{
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "Front matter parsing",
+      "objective": "Implement split_front_matter(text: str) -> tuple[Optional[str], str] and parse_front_matter(text: str) -> dict[str, str] in src/slatepress/frontmatter.py. split_front_matter splits text separated by '---' delimiters, returning (front_matter_str, content_str), or (None, text) if no front matter exists. Raises ValueError when the opening '---' delimiter is present but never closed. parse_front_matter takes front matter text and returns a dict[str, str] supporting simple 'key: value' lines and ignoring comment lines beginning with '#'.",
+      "target_files": [
+        "src/slatepress/frontmatter.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "split_front_matter successfully parses valid front matter",
+        "split_front_matter raises ValueError on unclosed front matter",
+        "parse_front_matter ignores # comments and parses key-value pairs"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_FRONTMATTER",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-07T11:04:48Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-002",
+      "title": "HTML templates and escaping",
+      "objective": "Implement escape(text: str) -> str and page(title: str, body: str, css_link: Optional[str] = None) -> str in src/slatepress/html.py. escape encodes HTML special characters (&, <, >). page produces a complete HTML5 document string with doctype, head with title and optional css_link, and body containing a main element with the body argument.",
+      "target_files": [
+        "src/slatepress/html.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "escape correctly converts special characters",
+        "page generates valid HTML5 document structure"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 1,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_HTML",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-07T11:07:00Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-003",
+      "title": "Markdown inline markup",
+      "objective": "Implement inline_markup(text: str) -> str in src/slatepress/markdown.py. Applies bold with double asterisks (**text**), italic with single asterisks (*text*), and inline code with backticks (`text`). Must escape HTML special characters (&, <, >) FIRST so markup characters in source text are not treated as markup after escaping.",
+      "target_files": [
+        "src/slatepress/markdown.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "inline_markup handles bold, italic, and inline code",
+        "HTML characters are escaped before markup parsing"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_MARKDOWN",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-07T11:08:57Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-005",
+      "title": "Site builder",
+      "objective": "Implement build_site(source_dir: Path, output_dir: Path) -> list[str] in src/slatepress/site.py. Converts Markdown files (.md) to HTML using front matter, markdown, and html modules, recursing into subdirectories, skipping any file whose name begins with an underscore or a dot, and copying any non-Markdown file unchanged. Returns a list of output file paths written as strings.",
+      "target_files": [
+        "src/slatepress/site.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "build_site processes markdown files and copies others",
+        "skips files/dirs starting with underscore or dot",
+        "returns list of written paths"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_SITE",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-07T11:10:09Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-006",
+      "title": "CLI interface",
+      "objective": "Implement main(argv: list[str]) -> int in src/slatepress/cli.py. Takes a source directory and an optional output directory defaulting to a directory named _site. Returns 0 on success and 2 when the source directory does not exist.",
+      "target_files": [
+        "src/slatepress/cli.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "main returns 0 on successful build",
+        "main returns 2 when source directory is missing"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 2,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_CLI",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-07T11:12:19Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    }
+  ]
+}

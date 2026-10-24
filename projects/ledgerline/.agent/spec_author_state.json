@@ -1,0 +1,8 @@
+{
+  "attempts": 1,
+  "last_notes": [],
+  "gave_up": false,
+  "goal": "A pure-Python double-entry bookkeeping library called ledgerline, standard library only, no network access anywhere. Exact API, one implementation module per task: src/ledger/money.py exposes parse_amount(text) -> int returning integer minor units and format_amount(minor_units) -> str, raising ValueError on malformed input. src/ledger/accounts.py exposes an AccountType enum of ASSET, LIABILITY, EQ",
+  "at": "2026-10-06T01:32:51.544872+00:00",
+  "tasks_written": 7
+}

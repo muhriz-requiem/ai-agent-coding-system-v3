@@ -1,0 +1,209 @@
+{
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "Third-party call allowlist",
+      "objective": "Implement allowlist check logic in src/installer/allowlist.py with function check_url_allowed(url: str, allowed_domains: list[str]) -> bool. Returns True if the URL's hostname strictly matches or is a subdomain of an allowed domain, otherwise False. Raises ValueError if url is malformed.",
+      "target_files": [
+        "src/installer/allowlist.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "src/installer/allowlist.py exists",
+        "Correctly validates subdomains and exact matches",
+        "Raises ValueError on malformed URL"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 1,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_ALLOWLIST",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-17T02:05:32Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-002",
+      "title": "Record-and-continue integrity quarantine",
+      "objective": "Implement digest verification and quarantine in src/installer/quarantine.py with function verify_artifact(file_path: str, expected_sha256: str) -> bool. Computes the SHA-256 digest of the file at file_path, compares it to expected_sha256, returns True if match, or logs/records the failure and returns False without halting batch processing.",
+      "target_files": [
+        "src/installer/quarantine.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "src/installer/quarantine.py exists",
+        "Returns True on correct hash, False on mismatch without raising exception"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_QUARANTINE",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-17T02:07:25Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-003",
+      "title": "Transactional placement with rollback",
+      "objective": "Implement transactional placement in src/installer/transaction.py with class InstallTransaction managing a staged copy of files into target directories. Method commit() finalizes installation; method rollback() reverses all staged file placements upon failure. Raises RuntimeError if commit fails.",
+      "target_files": [
+        "src/installer/transaction.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "src/installer/transaction.py exists",
+        "Rollback successfully restores prior state on failure"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_TRANSACTION",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-17T02:09:00Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-004",
+      "title": "Manifest resolution and HTTPS downloader",
+      "objective": "Implement manifest resolution and HTTPS download in src/installer/resolver.py with function resolve_and_download(manifest: dict, target_dir: str) -> list[str]. Resolves dependencies, fetches artifacts over HTTPS, and returns list of downloaded file paths.",
+      "target_files": [
+        "src/installer/resolver.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "src/installer/resolver.py exists",
+        "Downloads artifacts over HTTPS respecting allowlist"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 3,
+      "status": "failed",
+      "last_feedback": "DIAGNOSIS: spec_wrong (confidence 0.98) -> needs_human\n  - IMPORTANT: the test above is a FROZEN contract -- the Builder is forbidden from editing it.\n  - from src.installer.resolver import resolve_and_download\n  - result = resolve_and_download(manifest, target_dir)\n  - Test failure: `test_resolve_and_download_happy_path` raises `RuntimeError`. The implementation attempts to perform a real HTTPS network connection using `urllib.request.urlopen` to `https://example.com/pkg1.tar.gz`\n  - Ensure the download logic is mockable and robust to the specific test environment. Since `example.com` is in the default allowlist but returns a 404 for this specific path, verify if the test expects a mock server or a specific URL.\nREASON: max retries exhausted\n  - Test failure: `test_resolve_and_download_happy_path` raises `RuntimeError`. The implementation attempts to perform a real HTTPS network connection using `urllib.request.urlopen` to `https://example.com/pkg1.tar.gz`, which results in a 404 Not Found error. The test framework (or the test case itself)\n  - The test test_resolve_and_download_happy_path fails because the implementation makes a real HTTPS request to example.com, which returns 404. The test expects a mocked response, but the direct use of urllib.request.urlopen may not be intercepted by the test's mocking strategy.",
+      "error_signature": "ERR_RESOLVER",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": null,
+      "auto_requeues": 1,
+      "failed_at": "2026-10-17T02:28:45.155531+00:00",
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-005",
+      "title": "Service pattern API and channel registry",
+      "objective": "Implement service-pattern API and static channel registry in src/installer/service.py using Service.method naming conventions and a handler registry. Expose register_channel(channel_name: str, handler: callable) and dispatch(channel_name: str, payload: dict) -> Any. Raises KeyError if channel is unregistered.",
+      "target_files": [
+        "src/installer/service.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "src/installer/service.py exists",
+        "Supports static pairable channel registry and Service.method routing"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_SERVICE",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": "2026-10-17T02:14:32Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-006",
+      "title": "End-to-end installer orchestration",
+      "objective": "Implement end-to-end installer orchestrator in src/installer/orchestrator.py with function run_install(manifest: dict, target_dir: str, allowed_domains: list[str]) -> bool. Combines resolution, allowlist checks, quarantine verification, and transactional placement with rollback.",
+      "target_files": [
+        "src/installer/orchestrator.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "src/installer/orchestrator.py exists",
+        "Executes full installation workflow with integrity checks and rollback support"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 2,
+      "status": "failed",
+      "last_feedback": "DIAGNOSIS: missing_module (confidence 0.95) -> fix_env\n  - UNRESOLVABLE IMPORTS: src.installer.resolver\n  - Use the exact dotted paths above; do not invent submodules\n  - name a module that does not resolve, so the test still skips and nothing ran\nREASON: doom loop: failure signature token 'ORCHESTRATOR' has recurred 7 times without an intervening success\n  - task tests did not run: passed 14 == baseline 14 (skipped 1). UNRESOLVABLE IMPORTS: src.installer.resolver\n  - task tests did not run: passed 14 == baseline 14 (skipped 1)",
+      "error_signature": "ERR_ORCHESTRATOR",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": null,
+      "auto_requeues": 1,
+      "failed_at": "2026-10-17T02:30:23.930306+00:00",
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    }
+  ]
+}

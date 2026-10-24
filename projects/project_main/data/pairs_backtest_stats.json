@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-09-15T00:26:07.233059+00:00",
+  "mode": "pairs",
+  "period": "2y",
+  "formation_window": 252,
+  "rebalance_days": 21,
+  "universe_size": 2,
+  "dropped_short_history": [],
+  "formations": 0,
+  "z_entry": 1.5,
+  "z_exit": 0.25,
+  "z_stop": 3.5,
+  "spread_bps": 10.0,
+  "slippage_bps": 3.0,
+  "cost_scale_by_vol": true,
+  "per_pair": {},
+  "aggregate": {
+    "n_trades": 0,
+    "kelly_fraction": null,
+    "usable": false,
+    "sharpe": null,
+    "sortino": null,
+    "calmar": null,
+    "omega": null
+  }
+}

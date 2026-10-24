@@ -1,0 +1,76 @@
+{
+  "generated_at": "2026-09-14T22:35:12.268699+00:00",
+  "tickers": [
+    "AAPL"
+  ],
+  "results": [
+    {
+      "mode": "close",
+      "period": "1y",
+      "horizon_days": 5,
+      "aggregate": {
+        "n_trades": 65,
+        "win_rate": 0.38461538461538464,
+        "avg_win": 0.029880445799507233,
+        "avg_loss": 0.021383556943869786,
+        "payoff_ratio": 1.3973561965364854,
+        "kelly_fraction": null,
+        "usable": false,
+        "sharpe": -0.3521199765180216,
+        "sortino": -0.4717193086440983,
+        "calmar": -3.0147184559785396,
+        "omega": 0.8733476228353033
+      },
+      "per_ticker": {
+        "AAPL": {
+          "n_trades": 65,
+          "win_rate": 0.38461538461538464,
+          "avg_win": 0.029880445799507233,
+          "avg_loss": 0.021383556943869786,
+          "payoff_ratio": 1.3973561965364854,
+          "kelly_fraction": null,
+          "usable": false,
+          "sharpe": -0.3521199765180216,
+          "sortino": -0.4717193086440983,
+          "calmar": -3.0147184559785396,
+          "omega": 0.8733476228353033
+        }
+      },
+      "per_side": null
+    },
+    {
+      "mode": "close",
+      "period": "2y",
+      "horizon_days": 5,
+      "aggregate": {
+        "n_trades": 131,
+        "win_rate": 0.4198473282442748,
+        "avg_win": 0.03726397810146296,
+        "avg_loss": 0.022571238700941673,
+        "payoff_ratio": 1.6509496264335861,
+        "kelly_fraction": 0.0684418931741676,
+        "usable": true,
+        "sharpe": 0.4534255791641868,
+        "sortino": 0.6074729662290351,
+        "calmar": 5.208583452010679,
+        "omega": 1.1947661770243059
+      },
+      "per_ticker": {
+        "AAPL": {
+          "n_trades": 131,
+          "win_rate": 0.4198473282442748,
+          "avg_win": 0.03726397810146296,
+          "avg_loss": 0.022571238700941673,
+          "payoff_ratio": 1.6509496264335861,
+          "kelly_fraction": 0.0684418931741676,
+          "usable": true,
+          "sharpe": 0.4534255791641868,
+          "sortino": 0.6074729662290351,
+          "calmar": 5.208583452010679,
+          "omega": 1.1947661770243059
+        }
+      },
+      "per_side": null
+    }
+  ]
+}

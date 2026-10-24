@@ -1,0 +1,76 @@
+{
+  "tasks": [
+    {
+      "id": "T-RENDERER",
+      "title": "Task row formatting and escalation diagnosis parsing",
+      "objective": "Extend src/boardscan.py to format task rows and parse escalation diagnoses. Expose render_table(projects_data: list[dict]) -> str and parse_diagnosis(feedback: str) -> dict | None. Formats columns [id, TITLE, STATUS, ATTEMPTS, DEPS] separated by ' | ', replaces newlines in id/title with spaces, and extracts well-formed DIAGNOSIS strings starting with 'DIAGNOSIS:'.",
+      "target_files": [
+        "src/boardscan.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "tests/test_rendering.py is collected and green",
+        "correct column separation and fallback status '?'",
+        "diagnosis fields extracted correctly"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "pending",
+      "last_feedback": null,
+      "error_signature": "ERR_BOARDSCAN",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": null,
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-CLI",
+      "title": "CLI wiring, exit codes, and JSON output",
+      "objective": "Extend src/boardscan.py with argparse CLI parsing, main() entry point, --json mode, and project filtering. Supports invocation python src/boardscan.py [--project NAME] [--root PATH] [--json]. Prints sorted projects with '== <project-name> ==' headers, handles exit codes 0, 1, and 2, and outputs pretty-printed JSON when --json is passed.",
+      "target_files": [
+        "src/boardscan.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [
+        "T-RENDERER"
+      ],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "tests/test_cli.py is collected and green",
+        "--json flag produces valid JSON array",
+        "exit codes 0, 1, 2 returned appropriately"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "pending",
+      "last_feedback": null,
+      "error_signature": "ERR_BOARDSCAN",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "completed_at": null,
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "task_id": "T-002",
+  "attempts": 1,
+  "verdict": "APPROVED",
+  "model_used": "divergence",
+  "duration_s": 113.88,
+  "escalated": false,
+  "reason": null,
+  "files_applied": 1
+}

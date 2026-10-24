@@ -1,0 +1,26 @@
+{
+  "tasks": [
+    {
+      "id": "TASK-2001",
+      "title": "Consume shared_util",
+      "objective": "Use shared_util.normalize_token in src/consumer.py",
+      "target_files": [
+        "src/consumer.py"
+      ],
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "Uses normalize_token",
+        "Tests pass"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": null,
+      "task_type": "feature",
+      "should_pass": true,
+      "completed_at": "2026-08-31T22:23:09Z"
+    }
+  ]
+}

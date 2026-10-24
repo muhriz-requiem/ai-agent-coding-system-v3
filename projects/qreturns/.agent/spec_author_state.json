@@ -1,0 +1,8 @@
+{
+  "attempts": 1,
+  "last_notes": [],
+  "gave_up": false,
+  "goal": "qreturns: stdlib-only returns-metrics library plus minimal CLI for quant-finance research. No network, no third-party packages. Layout: package src/qreturns/ with __init__.py, metrics.py, cli.py. Tests import src.qreturns.metrics / src.qreturns.cli directly.\n\nMODULE src/qreturns/metrics.py:\n- compute_metrics(prices) -> dict with EXACTLY four keys: annualized_return, annualized_vol, sharpe, max_dra",
+  "at": "2026-10-19T21:56:14.383773+00:00",
+  "tasks_written": 2
+}

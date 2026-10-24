@@ -1,0 +1,76 @@
+{
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "Implement metrics module",
+      "objective": "Implement compute_metrics(prices: list[float]) -> dict in src/qreturns/metrics.py. Computes annualized_return, annualized_vol, sharpe, and max_drawdown using daily log returns (252 trading days/year). Raises ValueError('need at least 3 prices') if len(prices) < 3, and ValueError('prices must be positive') if any price <= 0.",
+      "target_files": [
+        "src/qreturns/metrics.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "compute_metrics([100, 80, 120]) matches worked example values within pytest.approx",
+        "ValueError raised for length < 3 or non-positive prices"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_METRICS",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "authored_test_path": "tests/test_metrics.py",
+      "completed_at": "2026-10-19T21:58:15Z",
+      "auto_requeues": 0,
+      "failed_at": null,
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    },
+    {
+      "id": "T-002",
+      "title": "Implement CLI module",
+      "objective": "Implement main(argv: list[str]) -> int in src/qreturns/cli.py. Reads prices from a CSV file specified by argv[0] (optional 'price' header), computes metrics using compute_metrics, prints the four metrics in 'key=value' format to stdout, and returns 0 on success. Writes a message starting with 'bad csv: ' to stderr and returns 2 on invalid input.",
+      "target_files": [
+        "src/qreturns/cli.py"
+      ],
+      "allow_test_edits": false,
+      "dependencies": [
+        "T-001"
+      ],
+      "priority": "medium",
+      "acceptance_criteria": [
+        "main successfully processes valid CSV file and returns 0",
+        "main returns 2 and writes to stderr on invalid CSV format or bad data"
+      ],
+      "workspace_patterns_referenced": [],
+      "retry_count": 0,
+      "status": "done",
+      "last_feedback": null,
+      "error_signature": "ERR_CLI_ENV_PATHED",
+      "task_type": "feature",
+      "should_pass": true,
+      "requires_new_tests": true,
+      "authored_test_path": "tests/test_cli.py",
+      "completed_at": "2026-10-19T22:08:03Z",
+      "auto_requeues": 0,
+      "failed_at": "2026-10-19T21:59:52.879817+00:00",
+      "defer_until": null,
+      "metric": null,
+      "run_command": null,
+      "results_path": "reports/metrics.json",
+      "max_runtime_s": null,
+      "strategies": [],
+      "divergent": null,
+      "n_candidates": 0
+    }
+  ]
+}

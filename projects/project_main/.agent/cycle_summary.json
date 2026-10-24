@@ -1,0 +1,10 @@
+{
+  "task_id": "TASK-7013B",
+  "attempts": 1,
+  "verdict": "APPROVED",
+  "model_used": "builder_initial",
+  "duration_s": 90.56,
+  "escalated": false,
+  "reason": null,
+  "files_applied": 1
+}
